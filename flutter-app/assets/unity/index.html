@@ -30,6 +30,7 @@
     </div>
 
     <script>
+      var canvas = document.querySelector("#unity-canvas");
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/WebGL.loader.js";
       var config = {
@@ -43,20 +44,76 @@
         productVersion: "1.0",
       };
 
-      // Expose unityInstance globally so Flutter can call SendMessage
-      window.unityInstance = null;
+      // --- Browser-mode overlay (shown when running outside Flutter WebView) ---
+      var overlay = document.createElement('div');
+      overlay.style.cssText = [
+        'display:none', 'position:fixed', 'inset:0',
+        'background:rgba(0,0,0,0.6)', 'color:#fff',
+        'font-family:sans-serif', 'flex-direction:column',
+        'align-items:center', 'justify-content:center', 'z-index:99'
+      ].join(';');
+      overlay.innerHTML =
+        '<h1 id="ov-title" style="font-size:2.5rem;letter-spacing:.2em;margin:0">TAP RUNNER</h1>' +
+        '<p id="ov-sub" style="margin:.5rem 0 2rem;color:#ccc">Space / Click to jump</p>' +
+        '<div id="ov-scores" style="display:none;font-size:1.3rem;margin-bottom:1.5rem">' +
+          '<span id="ov-score"></span>&nbsp;|&nbsp;<span id="ov-best" style="color:#ffd54f"></span>' +
+        '</div>' +
+        '<button id="ov-btn" style="padding:.8rem 3rem;font-size:1.3rem;border:none;border-radius:8px;background:#2196f3;color:#fff;cursor:pointer">START</button>';
+      document.body.appendChild(overlay);
 
-      // Flutter → Unity commands
+      window.unityInstance = null;
+      var isBrowserMode = !window.flutter_inappwebview;
+
       window.flutterStartGame = function() {
-        if (window.unityInstance) {
+        if (window.unityInstance)
           window.unityInstance.SendMessage('GameManager', 'OnFlutterStartGame', '');
-        }
       };
       window.flutterRestartGame = function() {
-        if (window.unityInstance) {
+        if (window.unityInstance)
           window.unityInstance.SendMessage('GameManager', 'OnFlutterRestartGame', '');
+      };
+
+      // Fallback bridge for browser mode
+      window.flutter_inappwebview = window.flutter_inappwebview || {
+        callHandler: function(name, a, b) {
+          if (name === 'onGameOver') showOverlay('gameover', a, b);
         }
       };
+
+      var bestScoreBrowser = 0;
+      function showOverlay(mode, score, best) {
+        overlay.style.display = 'flex';
+        var title  = document.getElementById('ov-title');
+        var sub    = document.getElementById('ov-sub');
+        var scores = document.getElementById('ov-scores');
+        var btn    = document.getElementById('ov-btn');
+        if (mode === 'start') {
+          title.textContent = 'TAP RUNNER';
+          sub.style.display = 'block';
+          scores.style.display = 'none';
+          btn.textContent = 'START';
+          btn.style.background = '#2196f3';
+          btn.onclick = function() {
+            overlay.style.display = 'none';
+            window.flutterStartGame();
+            canvas.focus();
+          };
+        } else {
+          if (best > bestScoreBrowser) bestScoreBrowser = best;
+          title.textContent = 'GAME OVER';
+          sub.style.display = 'none';
+          scores.style.display = 'block';
+          document.getElementById('ov-score').textContent = 'Score: ' + (score || 0);
+          document.getElementById('ov-best').textContent  = 'Best: '  + bestScoreBrowser;
+          btn.textContent = 'RESTART';
+          btn.style.background = '#ff9800';
+          btn.onclick = function() {
+            overlay.style.display = 'none';
+            window.flutterRestartGame();
+            canvas.focus();
+          };
+        }
+      }
 
       function showError(msg) {
         document.querySelector("#unity-loading-bar").innerHTML =
@@ -68,15 +125,15 @@
       script.src = loaderUrl;
       script.onerror = function() { showError("Failed to load " + loaderUrl); };
       script.onload = function() {
-        console.log("[TapRunner] loader.js loaded, creating Unity instance...");
-        createUnityInstance(document.querySelector("#unity-canvas"), config, function(progress) {
+        createUnityInstance(canvas, config, function(progress) {
           document.querySelector("#unity-progress-bar-full").style.width = (100 * progress) + "%";
-          console.log("[TapRunner] progress: " + Math.round(progress * 100) + "%");
+          console.log("[TapRunner] " + Math.round(progress * 100) + "%");
         }).then(function(instance) {
           window.unityInstance = instance;
           document.querySelector("#unity-loading-bar").style.display = "none";
-          console.log("[TapRunner] Unity ready!");
-          if (window.flutter_inappwebview) {
+          if (isBrowserMode) {
+            showOverlay('start');
+          } else {
             window.flutter_inappwebview.callHandler('onUnityReady');
           }
         }).catch(function(message) {
