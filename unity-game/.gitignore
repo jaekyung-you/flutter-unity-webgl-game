@@ -4,6 +4,9 @@
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
+# Keep WebGL build output for portfolio demo
+!Builds/
+!Builds/**
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
 *.pidb
