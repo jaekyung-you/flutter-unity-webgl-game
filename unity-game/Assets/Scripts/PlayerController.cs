@@ -13,9 +13,6 @@ public class PlayerController : MonoBehaviour
     public Sprite burnoutSprite;
     public Sprite fallSprite;
 
-    // Character occupies this fraction of screen height
-    private const float TargetHeightRatio = 0.12f;
-
     private Rigidbody2D rb;
     private SpriteRenderer sr;
     private int moveDirection;
@@ -27,18 +24,6 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         rb.simulated = false;
-        AutoScale();
-    }
-
-    // Scale so character = TargetHeightRatio of screen height, regardless of PNG resolution
-    private void AutoScale()
-    {
-        if (sr.sprite == null) return;
-        float screenHeight = Camera.main.orthographicSize * 2f;
-        float targetWorldH = screenHeight * TargetHeightRatio;
-        float spriteH = sr.sprite.bounds.size.y;
-        if (spriteH > 0f)
-            transform.localScale = Vector3.one * (targetWorldH / spriteH);
     }
 
     void Update()
@@ -67,7 +52,6 @@ public class PlayerController : MonoBehaviour
         rb.simulated = true;
         moveDirection = 0;
         SetSprite(normalSprite);
-        AutoScale();
     }
 
     public void StopMoving()
@@ -78,32 +62,25 @@ public class PlayerController : MonoBehaviour
         moveDirection = 0;
     }
 
-    public void ShowHitFlash()
-    {
-        StartCoroutine(HitFlashCoroutine());
-    }
+    public void ShowHitFlash()   => StartCoroutine(HitFlashCoroutine());
 
     public void SetBurnoutState()
     {
         isBurnout = true;
         SetSprite(burnoutSprite);
-        AutoScale();
     }
 
     public void SetFallState()
     {
         StopAllCoroutines();
         SetSprite(fallSprite);
-        AutoScale();
     }
 
     private IEnumerator HitFlashCoroutine()
     {
         SetSprite(hitSprite);
-        AutoScale();
         yield return new WaitForSecondsRealtime(0.4f);
         SetSprite(isBurnout ? burnoutSprite : normalSprite);
-        AutoScale();
     }
 
     private void SetSprite(Sprite s)

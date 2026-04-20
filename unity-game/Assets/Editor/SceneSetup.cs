@@ -6,8 +6,12 @@ using System.IO;
 
 public static class SceneSetup
 {
-    // Scales are handled at runtime in PlayerController/FallingObject via AutoScale()
-    // based on actual sprite bounds vs camera orthographicSize. No hardcoded scale here.
+    // All sprites are 512x512px at PPU=100 → world size 5.12 units at scale 1.0
+    // Camera orthographicSize=5 → screen height=10 units, iPhone15 portrait width≈4.6 units
+    // Player  : target 1.1 units tall → 1.1/5.12 = 0.215f
+    // Falling : target 0.7 units tall → 0.7/5.12 = 0.137f
+    private const float PlayerScale  = 0.215f;
+    private const float FallingScale = 0.137f;
 
     [MenuItem("Build/Setup Game Scene")]
     public static void SetupScene()
@@ -34,6 +38,7 @@ public static class SceneSetup
         // --- Player ---
         var playerGo = new GameObject("Player");
         playerGo.transform.position = new Vector3(0, -3.8f, 0);
+        playerGo.transform.localScale = new Vector3(PlayerScale, PlayerScale, 1f);
         playerGo.tag = "Player";
 
         var playerSr = playerGo.AddComponent<SpriteRenderer>();
@@ -115,6 +120,7 @@ public static class SceneSetup
             }
 
             var obj = new GameObject(fileName);
+            obj.transform.localScale = new Vector3(FallingScale, FallingScale, 1f);
 
             var sr = obj.AddComponent<SpriteRenderer>();
             sr.sprite = sprite;
