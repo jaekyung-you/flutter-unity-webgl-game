@@ -6,17 +6,18 @@ using System.IO;
 
 public static class SceneSetup
 {
+    // Character scale: fits portrait screen comfortably (~15% of screen height)
+    private const float PlayerScale = 0.28f;
+    // Falling object scale: noticeably smaller than player
+    private const float FallingScale = 0.13f;
+
     [MenuItem("Build/Setup Game Scene")]
     public static void SetupScene()
     {
-        // 1. Ensure "FallingObject" tag exists
         EnsureTag("FallingObject");
-
-        // 2. Set all PNGs in Assets/Sprites/ to Sprite import mode
         ConfigureSpriteImporters();
         AssetDatabase.Refresh();
 
-        // 3. Build scene
         EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
         // --- Camera ---
@@ -27,28 +28,20 @@ public static class SceneSetup
         camera.orthographic = true;
         camera.orthographicSize = 5;
 
-        // --- Static office background ---
+        // --- Background ---
         var bg = CreateColorSprite("Background", new Color(0.1f, 0.1f, 0.15f));
         bg.transform.position = new Vector3(0, 0, 1);
         bg.transform.localScale = new Vector3(20, 12, 1);
 
         // --- Player ---
         var playerGo = new GameObject("Player");
-        playerGo.transform.position = new Vector3(0, -4.0f, 0);
+        playerGo.transform.position = new Vector3(0, -3.8f, 0);
+        playerGo.transform.localScale = new Vector3(PlayerScale, PlayerScale, 1f);
         playerGo.tag = "Player";
 
         var playerSr = playerGo.AddComponent<SpriteRenderer>();
-        var playerSprite = FindSprite("char_male_normal");
-        if (playerSprite != null)
-        {
-            playerSr.sprite = playerSprite;
-        }
-        else
-        {
-            playerSr.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
-            playerSr.color = new Color(0.2f, 0.6f, 1f);
-            playerGo.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
-        }
+        var normalSprite = FindSprite("char_male_normal");
+        playerSr.sprite = normalSprite;
 
         var rb = playerGo.AddComponent<Rigidbody2D>();
         rb.gravityScale = 0f;
@@ -57,13 +50,19 @@ public static class SceneSetup
         rb.simulated = false;
 
         var playerCol = playerGo.AddComponent<BoxCollider2D>();
-        playerCol.size = new Vector2(0.7f, 0.7f);
+        playerCol.size = new Vector2(180f, 200f); // pixel-space collider (scaled down by PlayerScale)
         playerCol.isTrigger = true;
 
         var pc = playerGo.AddComponent<PlayerController>();
         pc.moveSpeed = 5f;
 
-        // --- FallingObject prefabs (auto-created from non-char_ sprites) ---
+        // Assign all 4 character sprites
+        pc.normalSprite  = normalSprite;
+        pc.hitSprite     = FindSprite("char_male_hit");
+        pc.burnoutSprite = FindSprite("char_male_burnout");
+        pc.fallSprite    = FindSprite("char_male_fall");
+
+        // --- FallingObject prefabs ---
         Directory.CreateDirectory(Application.dataPath + "/Prefabs");
         var fallingPrefabs = BuildFallingObjectPrefabs();
 
@@ -95,10 +94,6 @@ public static class SceneSetup
         Debug.Log("[KalToeWang] Scene ready — " + fallingPrefabs.Count + " falling object types.");
     }
 
-    // ---------------------------------------------------------------------------
-    // Helpers
-    // ---------------------------------------------------------------------------
-
     private static List<GameObject> BuildFallingObjectPrefabs()
     {
         var prefabs = new List<GameObject>();
@@ -108,7 +103,7 @@ public static class SceneSetup
         foreach (var fullPath in Directory.GetFiles(spritesDir, "*.png"))
         {
             var fileName = Path.GetFileNameWithoutExtension(fullPath);
-            if (fileName.StartsWith("char_")) continue;  // skip character sprites
+            if (fileName.StartsWith("char_")) continue;
 
             var assetPath = "Assets/Sprites/" + Path.GetFileName(fullPath);
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
@@ -123,6 +118,7 @@ public static class SceneSetup
             }
 
             var obj = new GameObject(fileName);
+            obj.transform.localScale = new Vector3(FallingScale, FallingScale, 1f);
 
             var sr = obj.AddComponent<SpriteRenderer>();
             sr.sprite = sprite;
@@ -152,11 +148,15 @@ public static class SceneSetup
 
         foreach (var fullPath in Directory.GetFiles(spritesDir, "*.png"))
         {
+            var fileName = Path.GetFileNameWithoutExtension(fullPath);
             var assetPath = "Assets/Sprites/" + Path.GetFileName(fullPath);
             var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-            if (importer == null || importer.textureType == TextureImporterType.Sprite) continue;
+            if (importer == null) continue;
+
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
+            // Use same PPU for all; scale is controlled via transform
+            importer.spritePixelsPerUnit = 100f;
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
         }
     }

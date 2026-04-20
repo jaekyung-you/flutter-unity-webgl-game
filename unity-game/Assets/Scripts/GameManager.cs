@@ -65,11 +65,23 @@ public class GameManager : MonoBehaviour
     {
         if (!isPlaying) return;
         burnoutCount++;
-#if UNITY_WEBGL && !UNITY_EDITOR
-        SendBurnoutToFlutter(burnoutCount, maxBurnout);
-#endif
+
         if (burnoutCount >= maxBurnout)
+        {
             TriggerGameOver();
+        }
+        else
+        {
+            // 마지막 목숨 1개 남으면 burnout 표정으로 전환
+            if (burnoutCount == maxBurnout - 1)
+                player.SetBurnoutState();
+            else
+                player.ShowHitFlash();
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+            SendBurnoutToFlutter(burnoutCount, maxBurnout);
+#endif
+        }
     }
 
     public void IncrementDodge()
@@ -86,14 +98,17 @@ public class GameManager : MonoBehaviour
         if (!isPlaying) return;
         isPlaying = false;
         Time.timeScale = 1f;
+        player.SetFallState();
         player.StopMoving();
         spawner.StopSpawning();
+
         if (score > bestScore)
         {
             bestScore = score;
             PlayerPrefs.SetInt("BestScore", bestScore);
         }
 #if UNITY_WEBGL && !UNITY_EDITOR
+        SendBurnoutToFlutter(burnoutCount, maxBurnout);
         SendGameOverToFlutter(score, bestScore);
 #endif
     }
