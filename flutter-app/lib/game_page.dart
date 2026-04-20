@@ -156,42 +156,31 @@ class _GamePageState extends State<GamePage> {
   }
 
   Widget _buildHUD() {
-    return Stack(
-      children: [
-        // Top bar: timer (left) + dodge count (right)
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Timer
-                  _hudChip('⏱ $_score초'),
-                  // Pause button
-                  GestureDetector(
-                    onTap: _togglePause,
-                    child: _hudChip(_isPaused ? '▶' : '⏸'),
-                  ),
-                  // Dodge count
-                  _hudChip('✅ $_dodgeCount'),
-                ],
-              ),
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Top bar: timer | pause | dodge
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _hudChip('⏱ $_score초'),
+                GestureDetector(
+                  onTap: _togglePause,
+                  child: _hudChip(_isPaused ? '▶' : '⏸'),
+                ),
+                _hudChip('✅ $_dodgeCount'),
+              ],
             ),
           ),
-        ),
 
-        // Burnout gauge (below top bar)
-        Positioned(
-          top: 72,
-          left: 0,
-          right: 0,
-          child: Center(
+          // Burnout gauge (directly below top bar, no hardcoded offset)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(_burnoutMax, (i) {
                 final filled = i < _burnoutCurrent;
                 return Padding(
@@ -207,27 +196,23 @@ class _GamePageState extends State<GamePage> {
               }),
             ),
           ),
-        ),
 
-        // Bottom control buttons
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _moveButton('◄', 'left'),
-                  _moveButton('►', 'right'),
-                ],
-              ),
+          // Middle: transparent spacer (Unity canvas visible underneath)
+          const Spacer(),
+
+          // Bottom ◄ ► buttons
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _moveButton('◄', 'left'),
+                _moveButton('►', 'right'),
+              ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
