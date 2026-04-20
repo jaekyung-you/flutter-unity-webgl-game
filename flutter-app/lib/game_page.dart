@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'models/game_record.dart';
+import 'services/score_service.dart';
 
 class GamePage extends StatefulWidget {
-  const GamePage({super.key});
+  final String character;
+
+  const GamePage({super.key, this.character = 'male'});
 
   @override
   State<GamePage> createState() => _GamePageState();
@@ -94,7 +98,8 @@ class _GamePageState extends State<GamePage> {
                     style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   const SizedBox(height: 32),
-                  _actionButton('START', Colors.blue, _startGame),
+                  _actionButton('START', const Color(0xFFFFCC00), _startGame,
+                      textColor: Colors.black),
                 ],
               ),
             ),
@@ -124,10 +129,18 @@ class _GamePageState extends State<GamePage> {
                   ),
                   Text(
                     '최고: $_bestScore초',
-                    style: const TextStyle(color: Colors.amber, fontSize: 20),
+                    style: const TextStyle(color: Color(0xFFFFCC00), fontSize: 20),
                   ),
                   const SizedBox(height: 28),
                   _actionButton('다시 도전', Colors.orange, _restartGame),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: _goHome,
+                    child: const Text(
+                      '홈으로',
+                      style: TextStyle(color: Colors.white54, fontSize: 16),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -140,7 +153,7 @@ class _GamePageState extends State<GamePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Colors.blue),
+                    CircularProgressIndicator(color: Color(0xFFFFCC00)),
                     SizedBox(height: 16),
                     Text(
                       '출근 중...',
@@ -160,7 +173,7 @@ class _GamePageState extends State<GamePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Top bar: timer | pause | dodge
+          // Top bar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
@@ -176,7 +189,7 @@ class _GamePageState extends State<GamePage> {
             ),
           ),
 
-          // Burnout gauge (directly below top bar, no hardcoded offset)
+          // Burnout gauge
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(
@@ -197,7 +210,6 @@ class _GamePageState extends State<GamePage> {
             ),
           ),
 
-          // Middle: transparent spacer (Unity canvas visible underneath)
           const Spacer(),
 
           // Bottom ◄ ► buttons
@@ -239,12 +251,8 @@ class _GamePageState extends State<GamePage> {
           _webController?.evaluateJavascript(source: 'window.flutterMoveRight();');
         }
       },
-      onPointerUp: (_) {
-        _webController?.evaluateJavascript(source: 'window.flutterStopMove();');
-      },
-      onPointerCancel: (_) {
-        _webController?.evaluateJavascript(source: 'window.flutterStopMove();');
-      },
+      onPointerUp: (_) => _webController?.evaluateJavascript(source: 'window.flutterStopMove();'),
+      onPointerCancel: (_) => _webController?.evaluateJavascript(source: 'window.flutterStopMove();'),
       child: Container(
         width: 96,
         height: 64,
@@ -256,11 +264,7 @@ class _GamePageState extends State<GamePage> {
         child: Center(
           child: Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
           ),
         ),
       ),
@@ -270,7 +274,8 @@ class _GamePageState extends State<GamePage> {
   Widget _overlay(Widget child) =>
       Container(color: Colors.black54, child: Center(child: child));
 
-  Widget _actionButton(String label, Color color, VoidCallback onTap) {
+  Widget _actionButton(String label, Color color, VoidCallback onTap,
+      {Color textColor = Colors.white}) {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
@@ -278,10 +283,7 @@ class _GamePageState extends State<GamePage> {
         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 22, color: Colors.white),
-      ),
+      child: Text(label, style: TextStyle(fontSize: 22, color: textColor)),
     );
   }
 
@@ -296,9 +298,7 @@ class _GamePageState extends State<GamePage> {
     controller.addJavaScriptHandler(
       handlerName: 'onScoreUpdate',
       callback: (args) {
-        if (args.isNotEmpty) {
-          setState(() => _score = (args[0] as num).toInt());
-        }
+        if (args.isNotEmpty) setState(() => _score = (args[0] as num).toInt());
       },
     );
 
@@ -317,23 +317,32 @@ class _GamePageState extends State<GamePage> {
     controller.addJavaScriptHandler(
       handlerName: 'onDodgeUpdate',
       callback: (args) {
-        if (args.isNotEmpty) {
-          setState(() => _dodgeCount = (args[0] as num).toInt());
-        }
+        if (args.isNotEmpty) setState(() => _dodgeCount = (args[0] as num).toInt());
       },
     );
 
     controller.addJavaScriptHandler(
       handlerName: 'onGameOver',
-      callback: (args) {
-        final int finalScore = args.isNotEmpty ? (args[0] as num).toInt() : _score;
-        final int best = args.length > 1 ? (args[1] as num).toInt() : _bestScore;
-        setState(() {
-          _gameOver = true;
-          _score = finalScore;
-          _bestScore = best;
-          _isPaused = false;
-        });
+      callback: (args) async {
+        final finalScore = args.isNotEmpty ? (args[0] as num).toInt() : _score;
+        final best = args.length > 1 ? (args[1] as num).toInt() : _bestScore;
+
+        // Save record to local storage
+        await ScoreService.addRecord(GameRecord(
+          date: DateTime.now(),
+          score: finalScore,
+          dodgeCount: _dodgeCount,
+          burnoutCount: _burnoutCurrent,
+        ));
+
+        if (mounted) {
+          setState(() {
+            _gameOver = true;
+            _score = finalScore;
+            _bestScore = best;
+            _isPaused = false;
+          });
+        }
       },
     );
   }
@@ -363,5 +372,9 @@ class _GamePageState extends State<GamePage> {
   void _togglePause() {
     setState(() => _isPaused = !_isPaused);
     _webController?.evaluateJavascript(source: 'window.flutterPause();');
+  }
+
+  void _goHome() {
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 }
