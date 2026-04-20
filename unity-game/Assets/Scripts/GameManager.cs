@@ -1,54 +1,47 @@
 using UnityEngine;
-using UnityEngine.UI;
 using System.Runtime.InteropServices;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    [Header("UI")]
-    public Text scoreText;
-    public GameObject gameOverPanel;
-    public Text bestScoreText;
-
     [Header("References")]
     public PlayerController player;
-    public ObstacleSpawner spawner;
-    public BackgroundScroller[] scrollers;
+    public ObjectSpawner spawner;
 
-    [DllImport("__Internal")]
-    private static extern void SendScoreToFlutter(int score);
+    [Header("Burnout")]
+    public int maxBurnout = 5;
 
-    [DllImport("__Internal")]
-    private static extern void SendGameOverToFlutter(int finalScore, int bestScore);
+#if UNITY_WEBGL && !UNITY_EDITOR
+    [DllImport("__Internal")] private static extern void SendScoreToFlutter(int score);
+    [DllImport("__Internal")] private static extern void SendGameOverToFlutter(int finalScore, int bestScore);
+    [DllImport("__Internal")] private static extern void SendBurnoutToFlutter(int current, int max);
+    [DllImport("__Internal")] private static extern void SendDodgeToFlutter(int count);
+#endif
 
     private int score;
     private int bestScore;
+    private int burnoutCount;
+    private int dodgeCount;
     private bool isPlaying;
+    private bool isPaused;
     private float scoreTimer;
 
-    void Awake()
-    {
-        Instance = this;
-    }
+    void Awake() { Instance = this; }
 
     void Start()
     {
         bestScore = PlayerPrefs.GetInt("BestScore", 0);
-        ShowGameOver(false);
     }
 
     void Update()
     {
-        if (!isPlaying) return;
-
+        if (!isPlaying || isPaused) return;
         scoreTimer += Time.deltaTime;
-        if (scoreTimer >= 0.1f)
+        if (scoreTimer >= 1f)
         {
             scoreTimer = 0f;
             score++;
-            UpdateScoreUI();
-
 #if UNITY_WEBGL && !UNITY_EDITOR
             SendScoreToFlutter(score);
 #endif
@@ -58,43 +51,54 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         score = 0;
+        burnoutCount = 0;
+        dodgeCount = 0;
         isPlaying = true;
+        isPaused = false;
         scoreTimer = 0f;
-        UpdateScoreUI();
-        ShowGameOver(false);
-
-        player.StartRunning();
+        Time.timeScale = 1f;
+        player.StartMoving();
         spawner.StartSpawning();
-        foreach (var s in scrollers) s.SetScrolling(true);
+    }
+
+    public void TriggerHit()
+    {
+        if (!isPlaying) return;
+        burnoutCount++;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        SendBurnoutToFlutter(burnoutCount, maxBurnout);
+#endif
+        if (burnoutCount >= maxBurnout)
+            TriggerGameOver();
+    }
+
+    public void IncrementDodge()
+    {
+        if (!isPlaying) return;
+        dodgeCount++;
+#if UNITY_WEBGL && !UNITY_EDITOR
+        SendDodgeToFlutter(dodgeCount);
+#endif
     }
 
     public void TriggerGameOver()
     {
         if (!isPlaying) return;
         isPlaying = false;
-
-        player.Die();
+        Time.timeScale = 1f;
+        player.StopMoving();
         spawner.StopSpawning();
-        foreach (var s in scrollers) s.SetScrolling(false);
-
         if (score > bestScore)
         {
             bestScore = score;
             PlayerPrefs.SetInt("BestScore", bestScore);
         }
-
-        ShowGameOver(true);
-
 #if UNITY_WEBGL && !UNITY_EDITOR
         SendGameOverToFlutter(score, bestScore);
 #endif
     }
 
-    // Called from Flutter via JS bridge
-    public void OnFlutterStartGame(string _)
-    {
-        StartGame();
-    }
+    public void OnFlutterStartGame(string _) => StartGame();
 
     public void OnFlutterRestartGame(string _)
     {
@@ -102,18 +106,10 @@ public class GameManager : MonoBehaviour
         StartGame();
     }
 
-    private void UpdateScoreUI()
+    public void OnFlutterPause(string _)
     {
-        if (scoreText != null)
-            scoreText.text = score.ToString();
-    }
-
-    private void ShowGameOver(bool show)
-    {
-        if (gameOverPanel != null)
-            gameOverPanel.SetActive(show);
-
-        if (show && bestScoreText != null)
-            bestScoreText.text = "BEST: " + bestScore;
+        if (!isPlaying) return;
+        isPaused = !isPaused;
+        Time.timeScale = isPaused ? 0f : 1f;
     }
 }

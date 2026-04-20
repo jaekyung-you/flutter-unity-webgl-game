@@ -16,13 +16,14 @@ class _GamePageState extends State<GamePage> {
   bool _unityReady = false;
   bool _gameStarted = false;
   bool _gameOver = false;
+  bool _isPaused = false;
   int _score = 0;
   int _bestScore = 0;
+  int _burnoutCurrent = 0;
+  int _burnoutMax = 5;
+  int _dodgeCount = 0;
 
   static const int _port = 8080;
-
-  // documentRoot 'assets/unity/' → URL /index.html → rootBundle key 'assets/unity/index.html'
-  // URL /Build/WebGL.loader.js → rootBundle key 'assets/unity/Build/WebGL.loader.js'
   static const String _indexUrl = 'http://localhost:$_port/index.html';
 
   @override
@@ -52,7 +53,6 @@ class _GamePageState extends State<GamePage> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // WebView only after server is ready to avoid hitting a dead socket
           if (_serverReady)
             InAppWebView(
               initialUrlRequest: URLRequest(url: WebUri(_indexUrl)),
@@ -69,27 +69,9 @@ class _GamePageState extends State<GamePage> {
               },
             ),
 
-          // Score overlay
+          // HUD: shown during active gameplay
           if (_gameStarted && !_gameOver)
-            Positioned(
-              top: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Score: $_score',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
+            _buildHUD(),
 
           // Start overlay
           if (_unityReady && !_gameStarted)
@@ -98,21 +80,21 @@ class _GamePageState extends State<GamePage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'TAP RUNNER',
+                    '칼퇴왕',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 36,
+                      fontSize: 40,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 4,
                     ),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    '화면을 탭하면 점프!',
+                    '← → 로 피하세요!',
                     style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   const SizedBox(height: 32),
-                  _button('START', Colors.blue, _startGame),
+                  _actionButton('START', Colors.blue, _startGame),
                 ],
               ),
             ),
@@ -133,20 +115,24 @@ class _GamePageState extends State<GamePage> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Score: $_score',
+                    '생존: $_score초',
                     style: const TextStyle(color: Colors.white, fontSize: 24),
                   ),
                   Text(
-                    'Best: $_bestScore',
+                    '회피: $_dodgeCount개',
+                    style: const TextStyle(color: Colors.white70, fontSize: 18),
+                  ),
+                  Text(
+                    '최고: $_bestScore초',
                     style: const TextStyle(color: Colors.amber, fontSize: 20),
                   ),
                   const SizedBox(height: 28),
-                  _button('RESTART', Colors.orange, _restartGame),
+                  _actionButton('다시 도전', Colors.orange, _restartGame),
                 ],
               ),
             ),
 
-          // Loading overlay (server starting or Unity loading)
+          // Loading overlay
           if (!_unityReady)
             Container(
               color: Colors.black,
@@ -157,7 +143,7 @@ class _GamePageState extends State<GamePage> {
                     CircularProgressIndicator(color: Colors.blue),
                     SizedBox(height: 16),
                     Text(
-                      'Loading Unity...',
+                      '출근 중...',
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ],
@@ -169,10 +155,137 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
+  Widget _buildHUD() {
+    return Stack(
+      children: [
+        // Top bar: timer (left) + dodge count (right)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Timer
+                  _hudChip('⏱ $_score초'),
+                  // Pause button
+                  GestureDetector(
+                    onTap: _togglePause,
+                    child: _hudChip(_isPaused ? '▶' : '⏸'),
+                  ),
+                  // Dodge count
+                  _hudChip('✅ $_dodgeCount'),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Burnout gauge (below top bar)
+        Positioned(
+          top: 72,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(_burnoutMax, (i) {
+                final filled = i < _burnoutCurrent;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3),
+                  child: Text(
+                    '🔥',
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: filled ? Colors.orange : Colors.white24,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+
+        // Bottom control buttons
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _moveButton('◄', 'left'),
+                  _moveButton('►', 'right'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _hudChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _moveButton(String label, String direction) {
+    return Listener(
+      onPointerDown: (_) {
+        if (direction == 'left') {
+          _webController?.evaluateJavascript(source: 'window.flutterMoveLeft();');
+        } else {
+          _webController?.evaluateJavascript(source: 'window.flutterMoveRight();');
+        }
+      },
+      onPointerUp: (_) {
+        _webController?.evaluateJavascript(source: 'window.flutterStopMove();');
+      },
+      onPointerCancel: (_) {
+        _webController?.evaluateJavascript(source: 'window.flutterStopMove();');
+      },
+      child: Container(
+        width: 96,
+        height: 64,
+        decoration: BoxDecoration(
+          color: Colors.white24,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white38, width: 2),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _overlay(Widget child) =>
       Container(color: Colors.black54, child: Center(child: child));
 
-  Widget _button(String label, Color color, VoidCallback onTap) {
+  Widget _actionButton(String label, Color color, VoidCallback onTap) {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
@@ -205,6 +318,27 @@ class _GamePageState extends State<GamePage> {
     );
 
     controller.addJavaScriptHandler(
+      handlerName: 'onBurnoutUpdate',
+      callback: (args) {
+        if (args.length >= 2) {
+          setState(() {
+            _burnoutCurrent = (args[0] as num).toInt();
+            _burnoutMax = (args[1] as num).toInt();
+          });
+        }
+      },
+    );
+
+    controller.addJavaScriptHandler(
+      handlerName: 'onDodgeUpdate',
+      callback: (args) {
+        if (args.isNotEmpty) {
+          setState(() => _dodgeCount = (args[0] as num).toInt());
+        }
+      },
+    );
+
+    controller.addJavaScriptHandler(
       handlerName: 'onGameOver',
       callback: (args) {
         final int finalScore = args.isNotEmpty ? (args[0] as num).toInt() : _score;
@@ -213,6 +347,7 @@ class _GamePageState extends State<GamePage> {
           _gameOver = true;
           _score = finalScore;
           _bestScore = best;
+          _isPaused = false;
         });
       },
     );
@@ -222,6 +357,9 @@ class _GamePageState extends State<GamePage> {
     setState(() {
       _gameStarted = true;
       _score = 0;
+      _burnoutCurrent = 0;
+      _dodgeCount = 0;
+      _isPaused = false;
     });
     _webController?.evaluateJavascript(source: 'window.flutterStartGame();');
   }
@@ -230,7 +368,15 @@ class _GamePageState extends State<GamePage> {
     setState(() {
       _gameOver = false;
       _score = 0;
+      _burnoutCurrent = 0;
+      _dodgeCount = 0;
+      _isPaused = false;
     });
     _webController?.evaluateJavascript(source: 'window.flutterRestartGame();');
+  }
+
+  void _togglePause() {
+    setState(() => _isPaused = !_isPaused);
+    _webController?.evaluateJavascript(source: 'window.flutterPause();');
   }
 }

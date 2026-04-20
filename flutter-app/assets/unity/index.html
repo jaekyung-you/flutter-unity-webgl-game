@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="ko">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
-    <title>Tap Runner</title>
+    <title>칼퇴왕</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
@@ -40,7 +40,7 @@
         codeUrl: buildUrl + "/WebGL.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
-        productName: "TapRunner",
+        productName: "KalToeWang",
         productVersion: "1.0",
       };
 
@@ -53,8 +53,8 @@
         'align-items:center', 'justify-content:center', 'z-index:99'
       ].join(';');
       overlay.innerHTML =
-        '<h1 id="ov-title" style="font-size:2.5rem;letter-spacing:.2em;margin:0">TAP RUNNER</h1>' +
-        '<p id="ov-sub" style="margin:.5rem 0 2rem;color:#ccc">Space / Click to jump</p>' +
+        '<h1 id="ov-title" style="font-size:2.5rem;letter-spacing:.2em;margin:0">칼퇴왕</h1>' +
+        '<p id="ov-sub" style="margin:.5rem 0 2rem;color:#ccc">← → 키 또는 A/D 로 피하세요</p>' +
         '<div id="ov-scores" style="display:none;font-size:1.3rem;margin-bottom:1.5rem">' +
           '<span id="ov-score"></span>&nbsp;|&nbsp;<span id="ov-best" style="color:#ffd54f"></span>' +
         '</div>' +
@@ -72,6 +72,22 @@
         if (window.unityInstance)
           window.unityInstance.SendMessage('GameManager', 'OnFlutterRestartGame', '');
       };
+      window.flutterMoveLeft = function() {
+        if (window.unityInstance)
+          window.unityInstance.SendMessage('Player', 'OnFlutterMoveLeft', '');
+      };
+      window.flutterMoveRight = function() {
+        if (window.unityInstance)
+          window.unityInstance.SendMessage('Player', 'OnFlutterMoveRight', '');
+      };
+      window.flutterStopMove = function() {
+        if (window.unityInstance)
+          window.unityInstance.SendMessage('Player', 'OnFlutterStopMove', '');
+      };
+      window.flutterPause = function() {
+        if (window.unityInstance)
+          window.unityInstance.SendMessage('GameManager', 'OnFlutterPause', '');
+      };
 
       // Fallback bridge for browser mode
       window.flutter_inappwebview = window.flutter_inappwebview || {
@@ -88,7 +104,7 @@
         var scores = document.getElementById('ov-scores');
         var btn    = document.getElementById('ov-btn');
         if (mode === 'start') {
-          title.textContent = 'TAP RUNNER';
+          title.textContent = '칼퇴왕';
           sub.style.display = 'block';
           scores.style.display = 'none';
           btn.textContent = 'START';
@@ -103,8 +119,8 @@
           title.textContent = 'GAME OVER';
           sub.style.display = 'none';
           scores.style.display = 'block';
-          document.getElementById('ov-score').textContent = 'Score: ' + (score || 0);
-          document.getElementById('ov-best').textContent  = 'Best: '  + bestScoreBrowser;
+          document.getElementById('ov-score').textContent = 'Score: ' + (score || 0) + 's';
+          document.getElementById('ov-best').textContent  = 'Best: '  + bestScoreBrowser + 's';
           btn.textContent = 'RESTART';
           btn.style.background = '#ff9800';
           btn.onclick = function() {
@@ -118,7 +134,7 @@
       function showError(msg) {
         document.querySelector("#unity-loading-bar").innerHTML =
           '<div style="color:red;padding:20px;font-size:14px;max-width:300px;word-break:break-all;">ERROR:<br>' + msg + '</div>';
-        console.error("[TapRunner] " + msg);
+        console.error("[KalToeWang] " + msg);
       }
 
       var script = document.createElement("script");
@@ -127,7 +143,7 @@
       script.onload = function() {
         createUnityInstance(canvas, config, function(progress) {
           document.querySelector("#unity-progress-bar-full").style.width = (100 * progress) + "%";
-          console.log("[TapRunner] " + Math.round(progress * 100) + "%");
+          console.log("[KalToeWang] " + Math.round(progress * 100) + "%");
         }).then(function(instance) {
           window.unityInstance = instance;
           document.querySelector("#unity-loading-bar").style.display = "none";

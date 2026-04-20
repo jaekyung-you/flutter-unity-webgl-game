@@ -5,19 +5,18 @@ import 'game_page.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
+    DeviceOrientation.portraitUp,
   ]);
-  runApp(const TapRunnerApp());
+  runApp(const KalToeWangApp());
 }
 
-class TapRunnerApp extends StatelessWidget {
-  const TapRunnerApp({super.key});
+class KalToeWangApp extends StatelessWidget {
+  const KalToeWangApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tap Runner',
+      title: '칼퇴왕',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue)),
       home: const GamePage(),

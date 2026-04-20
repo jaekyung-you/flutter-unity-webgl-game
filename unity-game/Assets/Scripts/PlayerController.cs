@@ -1,23 +1,18 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(Animator))]
+[RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("Jump")]
-    public float jumpForce = 12f;
-    public LayerMask groundLayer;
-    public Transform groundCheck;
-    public float groundCheckRadius = 0.15f;
+    [Header("Movement")]
+    public float moveSpeed = 5f;
 
     private Rigidbody2D rb;
-    private Animator anim;
-    private bool isGrounded;
+    private int moveDirection;
     private bool isAlive;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
         rb.simulated = false;
     }
 
@@ -25,42 +20,57 @@ public class PlayerController : MonoBehaviour
     {
         if (!isAlive) return;
 
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-        anim.SetBool("isGrounded", isGrounded);
+        // Keyboard input (browser + desktop)
+        int keyDir = 0;
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
+            keyDir = -1;
+        else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
+            keyDir = 1;
 
-        bool jumpInput = Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space);
-#if UNITY_IOS || UNITY_ANDROID
-        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
-            jumpInput = true;
-#endif
-        if (jumpInput && isGrounded)
-            Jump();
+        // Keyboard overrides button input when pressed
+        if (keyDir != 0) moveDirection = keyDir;
+
+        rb.linearVelocity = new Vector2(moveSpeed * moveDirection, 0f);
+
+        float halfWidth = Camera.main.orthographicSize * Camera.main.aspect;
+        float clampedX = Mathf.Clamp(rb.position.x, -halfWidth + 0.5f, halfWidth - 0.5f);
+        rb.position = new Vector2(clampedX, rb.position.y);
     }
 
-    public void StartRunning()
+    public void StartMoving()
     {
         isAlive = true;
         rb.simulated = true;
-        anim.SetTrigger("run");
+        moveDirection = 0;
     }
 
-    public void Die()
+    public void StopMoving()
     {
         isAlive = false;
         rb.simulated = false;
-        anim.SetTrigger("die");
+        rb.linearVelocity = Vector2.zero;
+        moveDirection = 0;
     }
 
-    private void Jump()
+    // Called from Flutter via JS bridge (◄ ► buttons)
+    public void OnFlutterMoveLeft(string _)
     {
-        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-        rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-        anim.SetTrigger("jump");
+        if (isAlive) moveDirection = -1;
     }
 
-    void OnCollisionEnter2D(Collision2D col)
+    public void OnFlutterMoveRight(string _)
     {
-        if (col.gameObject.CompareTag("Obstacle"))
-            GameManager.Instance.TriggerGameOver();
+        if (isAlive) moveDirection = 1;
+    }
+
+    public void OnFlutterStopMove(string _)
+    {
+        if (isAlive) moveDirection = 0;
+    }
+
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        if (col.CompareTag("FallingObject"))
+            GameManager.Instance.TriggerHit();
     }
 }
