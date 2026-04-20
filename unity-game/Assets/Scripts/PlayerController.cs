@@ -13,6 +13,9 @@ public class PlayerController : MonoBehaviour
     public Sprite burnoutSprite;
     public Sprite fallSprite;
 
+    // Character occupies this fraction of screen height
+    private const float TargetHeightRatio = 0.12f;
+
     private Rigidbody2D rb;
     private SpriteRenderer sr;
     private int moveDirection;
@@ -24,6 +27,18 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         rb.simulated = false;
+        AutoScale();
+    }
+
+    // Scale so character = TargetHeightRatio of screen height, regardless of PNG resolution
+    private void AutoScale()
+    {
+        if (sr.sprite == null) return;
+        float screenHeight = Camera.main.orthographicSize * 2f;
+        float targetWorldH = screenHeight * TargetHeightRatio;
+        float spriteH = sr.sprite.bounds.size.y;
+        if (spriteH > 0f)
+            transform.localScale = Vector3.one * (targetWorldH / spriteH);
     }
 
     void Update()
@@ -41,7 +56,7 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = new Vector2(moveSpeed * moveDirection, 0f);
 
         float halfWidth = Camera.main.orthographicSize * Camera.main.aspect;
-        float clampedX = Mathf.Clamp(rb.position.x, -halfWidth + 0.5f, halfWidth - 0.5f);
+        float clampedX = Mathf.Clamp(rb.position.x, -halfWidth + 0.3f, halfWidth - 0.3f);
         rb.position = new Vector2(clampedX, rb.position.y);
     }
 
@@ -52,6 +67,7 @@ public class PlayerController : MonoBehaviour
         rb.simulated = true;
         moveDirection = 0;
         SetSprite(normalSprite);
+        AutoScale();
     }
 
     public void StopMoving()
@@ -62,32 +78,32 @@ public class PlayerController : MonoBehaviour
         moveDirection = 0;
     }
 
-    // Called by GameManager when hit (not last life)
     public void ShowHitFlash()
     {
         StartCoroutine(HitFlashCoroutine());
     }
 
-    // Called by GameManager when 1 life remains
     public void SetBurnoutState()
     {
         isBurnout = true;
         SetSprite(burnoutSprite);
+        AutoScale();
     }
 
-    // Called by GameManager on game over
     public void SetFallState()
     {
         StopAllCoroutines();
         SetSprite(fallSprite);
+        AutoScale();
     }
 
     private IEnumerator HitFlashCoroutine()
     {
         SetSprite(hitSprite);
+        AutoScale();
         yield return new WaitForSecondsRealtime(0.4f);
-        // Return to whichever idle sprite is appropriate
         SetSprite(isBurnout ? burnoutSprite : normalSprite);
+        AutoScale();
     }
 
     private void SetSprite(Sprite s)

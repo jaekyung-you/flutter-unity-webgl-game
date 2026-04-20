@@ -6,10 +6,8 @@ using System.IO;
 
 public static class SceneSetup
 {
-    // Character scale: fits portrait screen comfortably (~15% of screen height)
-    private const float PlayerScale = 0.28f;
-    // Falling object scale: noticeably smaller than player
-    private const float FallingScale = 0.13f;
+    // Scales are handled at runtime in PlayerController/FallingObject via AutoScale()
+    // based on actual sprite bounds vs camera orthographicSize. No hardcoded scale here.
 
     [MenuItem("Build/Setup Game Scene")]
     public static void SetupScene()
@@ -36,7 +34,6 @@ public static class SceneSetup
         // --- Player ---
         var playerGo = new GameObject("Player");
         playerGo.transform.position = new Vector3(0, -3.8f, 0);
-        playerGo.transform.localScale = new Vector3(PlayerScale, PlayerScale, 1f);
         playerGo.tag = "Player";
 
         var playerSr = playerGo.AddComponent<SpriteRenderer>();
@@ -118,7 +115,6 @@ public static class SceneSetup
             }
 
             var obj = new GameObject(fileName);
-            obj.transform.localScale = new Vector3(FallingScale, FallingScale, 1f);
 
             var sr = obj.AddComponent<SpriteRenderer>();
             sr.sprite = sprite;
