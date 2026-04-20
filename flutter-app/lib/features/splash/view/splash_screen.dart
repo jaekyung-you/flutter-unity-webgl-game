@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../home/view/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,19 +17,18 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2200));
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 2200));
     _progress = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
     _ctrl.forward();
     _ctrl.addStatusListener((s) {
       if (s == AnimationStatus.completed && mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const HomeScreen(),
-            transitionsBuilder: (_, anim, __, child) =>
-                FadeTransition(opacity: anim, child: child),
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
+        Navigator.of(context).pushReplacement(PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const HomeScreen(),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 500),
+        ));
       }
     });
   }
@@ -47,59 +47,49 @@ class _SplashScreenState extends State<SplashScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF0A0A1E), Color(0xFF12123A)],
+            colors: [AppColors.background, Color(0xFF12123A)],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
               const Spacer(flex: 2),
-
-              // App icon
               Container(
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFCC00),
+                  color: AppColors.yellow,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFFCC00).withOpacity(0.5),
+                      color: AppColors.yellow.withOpacity(0.5),
                       blurRadius: 32,
                       spreadRadius: 4,
                     ),
                   ],
                 ),
                 child: const Center(
-                  child: Text('💼', style: TextStyle(fontSize: 48)),
-                ),
+                    child: Text('💼', style: TextStyle(fontSize: 48))),
               ),
-
               const SizedBox(height: 32),
-
               const Text(
                 'OVERWORK DODGE',
                 style: TextStyle(
-                  color: Color(0xFFFFCC00),
-                  fontSize: 14,
-                  letterSpacing: 4,
-                  fontWeight: FontWeight.w600,
-                ),
+                    color: AppColors.yellow,
+                    fontSize: 14,
+                    letterSpacing: 4,
+                    fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               const Text(
                 '야근 피하기',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2),
               ),
-
               const Spacer(flex: 3),
-
-              // Loading bar
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 48),
                 child: Column(
@@ -111,26 +101,21 @@ class _SplashScreenState extends State<SplashScreen>
                         child: LinearProgressIndicator(
                           value: _progress.value,
                           backgroundColor: Colors.white12,
-                          valueColor:
-                              const AlwaysStoppedAnimation<Color>(Color(0xFFFFCC00)),
+                          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.yellow),
                           minHeight: 4,
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'LOADING...',
-                      style: TextStyle(color: Colors.white38, fontSize: 12, letterSpacing: 2),
-                    ),
+                    const Text('LOADING...',
+                        style: TextStyle(
+                            color: Colors.white38, fontSize: 12, letterSpacing: 2)),
                   ],
                 ),
               ),
-
               const SizedBox(height: 24),
-              const Text(
-                'ⓒ 2025 YAGUHN STUDIO',
-                style: TextStyle(color: Colors.white24, fontSize: 11),
-              ),
+              const Text('ⓒ 2025 YAGUHN STUDIO',
+                  style: TextStyle(color: Colors.white24, fontSize: 11)),
               const SizedBox(height: 16),
             ],
           ),

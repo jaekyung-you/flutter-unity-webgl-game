@@ -1,70 +1,55 @@
 import 'package:flutter/material.dart';
-import '../services/score_service.dart';
-import 'character_select_screen.dart';
-import 'score_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../data/repositories/score_repository.dart';
+import '../../character_select/view/character_select_screen.dart';
+import '../../score/view/score_screen.dart';
+import '../bloc/home_bloc.dart';
+import '../bloc/home_event.dart';
+import '../bloc/home_state.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => HomeBloc(context.read<ScoreRepository>())
+        ..add(const HomeLoadRequested()),
+      child: const _HomeView(),
+    );
+  }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _bestScore = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadBestScore();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadBestScore();
-  }
-
-  Future<void> _loadBestScore() async {
-    final best = await ScoreService.getBestScore();
-    if (mounted) setState(() => _bestScore = best);
-  }
+class _HomeView extends StatelessWidget {
+  const _HomeView();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Background
           _background(),
-
-          // Moon
           Positioned(
             top: MediaQuery.of(context).padding.top + 24,
             right: 28,
             child: _moon(110),
           ),
-
-          // City silhouette
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: _cityscape(context),
           ),
-
-          // Content
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 24),
-
-                // Title
                 const Text(
                   '⚡ OVERWORK DODGE',
                   style: TextStyle(
-                    color: Color(0xFFFFCC00),
+                    color: AppColors.yellow,
                     fontSize: 13,
                     letterSpacing: 3,
                     fontWeight: FontWeight.w600,
@@ -80,10 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     letterSpacing: 2,
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // Character illustrations
                 SizedBox(
                   height: 140,
                   child: Row(
@@ -91,100 +73,89 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Image.asset('assets/images/char_male_normal.png',
-                          height: 120, errorBuilder: (_, __, ___) => const Text('👨‍💼', style: TextStyle(fontSize: 60))),
+                          height: 120,
+                          errorBuilder: (_, __, ___) =>
+                              const Text('👨‍💼', style: TextStyle(fontSize: 60))),
                       const SizedBox(width: 16),
                       Image.asset('assets/images/char_female_normal.png',
-                          height: 108, errorBuilder: (_, __, ___) => const Text('👩‍💼', style: TextStyle(fontSize: 54))),
+                          height: 108,
+                          errorBuilder: (_, __, ___) =>
+                              const Text('👩‍💼', style: TextStyle(fontSize: 54))),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // Best score card
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A4E),
+                      color: AppColors.cardDark,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.white12),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('🏆', style: TextStyle(fontSize: 20)),
-                        const SizedBox(width: 8),
-                        const Text(
-                          '최고 기록',
-                          style: TextStyle(color: Colors.white60, fontSize: 14),
-                        ),
-                        const SizedBox(width: 16),
-                        Text(
-                          _bestScore > 0 ? '$_bestScore s 생존' : '기록 없음',
-                          style: TextStyle(
-                            color: _bestScore > 0 ? const Color(0xFFFFCC00) : Colors.white38,
-                            fontSize: _bestScore > 0 ? 22 : 16,
-                            fontWeight: FontWeight.bold,
+                    child: BlocBuilder<HomeBloc, HomeState>(
+                      builder: (context, state) => Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('🏆', style: TextStyle(fontSize: 20)),
+                          const SizedBox(width: 8),
+                          const Text('최고 기록',
+                              style: TextStyle(color: Colors.white60, fontSize: 14)),
+                          const SizedBox(width: 16),
+                          Text(
+                            state.bestScore > 0
+                                ? '${state.bestScore} s 생존'
+                                : '기록 없음',
+                            style: TextStyle(
+                              color: state.bestScore > 0
+                                  ? AppColors.yellow
+                                  : Colors.white38,
+                              fontSize: state.bestScore > 0 ? 22 : 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 28),
-
-                // Start button
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const CharacterSelectScreen()),
-                        );
-                        if (result == true) _loadBestScore();
-                      },
+                      onPressed: () => _goCharacterSelect(context),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFFCC00),
-                        foregroundColor: const Color(0xFF0A0A1E),
+                        backgroundColor: AppColors.yellow,
+                        foregroundColor: AppColors.background,
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
+                            borderRadius: BorderRadius.circular(50)),
                         elevation: 8,
-                        shadowColor: const Color(0xFFFFCC00).withOpacity(0.5),
+                        shadowColor: AppColors.yellow.withOpacity(0.5),
                       ),
                       child: const Text(
                         '▶  게임 시작',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 2),
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2),
                       ),
                     ),
                   ),
                 ),
-
                 const Spacer(),
-
-                // Bottom icon buttons
                 Padding(
                   padding: const EdgeInsets.only(bottom: 24),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _iconBtn('👤', '캐릭터', () async {
-                        await Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const CharacterSelectScreen()));
-                      }),
+                      _iconBtn(context, '👤', '캐릭터',
+                          () => _goCharacterSelect(context)),
                       const SizedBox(width: 32),
-                      _iconBtn('🏆', '점수', () async {
-                        await Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const ScoreScreen()));
-                        _loadBestScore();
-                      }),
+                      _iconBtn(context, '🏆', '점수', () => _goScore(context)),
                     ],
                   ),
                 ),
@@ -196,14 +167,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _iconBtn(String icon, String label, VoidCallback onTap) {
+  Future<void> _goCharacterSelect(BuildContext context) async {
+    await Navigator.push(
+        context, MaterialPageRoute(builder: (_) => const CharacterSelectScreen()));
+    if (context.mounted) {
+      context.read<HomeBloc>().add(const HomeLoadRequested());
+    }
+  }
+
+  Future<void> _goScore(BuildContext context) async {
+    await Navigator.push(
+        context, MaterialPageRoute(builder: (_) => const ScoreScreen()));
+    if (context.mounted) {
+      context.read<HomeBloc>().add(const HomeLoadRequested());
+    }
+  }
+
+  Widget _iconBtn(BuildContext context, String icon, String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 72,
         height: 72,
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A4E),
+          color: AppColors.cardDark,
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white12),
         ),
@@ -224,7 +211,11 @@ class _HomeScreenState extends State<HomeScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF0A0A1E), Color(0xFF0D1040), Color(0xFF151540)],
+            colors: [
+              AppColors.background,
+              AppColors.backgroundMid,
+              AppColors.backgroundEnd,
+            ],
           ),
         ),
       );
@@ -274,13 +265,11 @@ class _CityscapePainter extends CustomPainter {
       [0.90, 0.4, 0.10, 1.0],
     ];
     for (final b in buildings) {
-      final rect = Rect.fromLTRB(
-        b[0] * size.width,
-        b[1] * size.height,
-        (b[0] + b[2]) * size.width,
-        b[3] * size.height,
+      canvas.drawRect(
+        Rect.fromLTRB(b[0] * size.width, b[1] * size.height,
+            (b[0] + b[2]) * size.width, b[3] * size.height),
+        paint,
       );
-      canvas.drawRect(rect, paint);
     }
   }
 
