@@ -70,6 +70,11 @@ flutter:
     - assets/images/
 
   fonts:
-    - family: BlackHanSans
+    - family: Pretendard
       fonts:
-        - asset: assets/fonts/BlackHanSans-Regular.ttf
+        - asset: assets/fonts/Pretendard-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Pretendard-ExtraBold.ttf
+          weight: 800

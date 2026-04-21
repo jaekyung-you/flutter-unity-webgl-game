@@ -15,8 +15,7 @@ class CharacterSelectBloc
 
   Future<void> _onLoad(
       CharacterSelectLoadRequested event, Emitter<CharacterSelectState> emit) async {
-    final c = await _repo.getSelectedCharacter();
-    emit(state.copyWith(selectedCharacter: c));
+    emit(state.copyWith(selectedCharacter: 'male'));
   }
 
   void _onChange(CharacterChanged event, Emitter<CharacterSelectState> emit) {

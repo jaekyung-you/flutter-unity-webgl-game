@@ -77,6 +77,24 @@ class _CharacterSelectView extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: AppSpacing.lg),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '⚠️ 피해야 할 것들',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      _obstacleList(),
+                    ],
+                  ),
+                ),
                 const Spacer(),
                 Center(
                   child: Text(
@@ -180,6 +198,58 @@ class _CharacterSelectView extends StatelessWidget {
             _statBar('번아웃 저항', burnoutRatio),
           ],
         ),
+      ),
+    );
+  }
+
+  static const _obstacles = [
+    ('document_pile', '서류더미'),
+    ('kpi_bomb', 'KPI 폭탄'),
+    ('meeting_mail', '회의 메일'),
+    ('overtime_notice', '야근 통보'),
+    ('overwork_coffee', '야근 커피'),
+    ('revision_laptop', '수정 요청'),
+    ('urgent_phone', '긴급 전화'),
+  ];
+
+  Widget _obstacleList() {
+    return SizedBox(
+      height: 72,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _obstacles.length,
+        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+        itemBuilder: (_, i) {
+          final (id, label) = _obstacles[i];
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.surface1,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Image.asset(
+                    'assets/images/$id.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.warning_amber_rounded,
+                            color: AppColors.warning, size: 24),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(label,
+                  style: AppTextStyles.micro
+                      .copyWith(color: AppColors.textMuted, fontSize: 9)),
+            ],
+          );
+        },
       ),
     );
   }
