@@ -60,37 +60,29 @@ The core engineering challenge: Flutter and Unity don't talk to each other nativ
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                  Flutter App (Dart)                      │
-│                                                          │
-│  SplashScreen → HomeScreen → CharacterSelectScreen       │
-│                                   ↓                      │
-│              GamePage  ←──────────────────               │
-│  ┌─────────────────────────────────────────────────────┐ │
-│  │  InAppLocalhostServer :8080  (serves assets/unity/) │ │
-│  │  InAppWebView  →  http://localhost:8080/index.html  │ │
-│  └──────────────────────┬──────────────────────────────┘ │
-│                         │ evaluateJavascript             │
-│     Flutter HUD overlay │ startGame / restartGame        │
-│     (lives, score,      │ setCharacter / pause           │
-│      game-over dialog)  │                                │
-│                         │ callHandler ←──────────────────┤
-│                         │ onUnityReady / onScoreUpdate   │
-│                         │ onGameOver / onBurnout         │
-└─────────────────────────┼──────────────────────────────-─┘
-                          │
-┌─────────────────────────┴──────────────────────────────┐
-│               WebView — index.html                      │
-│                                                         │
-│  bridge.jslib  ←  C# DllImport  ←  GameManager.cs      │
-│       ↓                                                 │
-│  window.flutter_inappwebview.callHandler(...)           │
-│                                                         │
-│  Unity Runtime (WASM ~29MB)                             │
-│    GameManager    ObjectSpawner    PlayerController     │
-│    FallingObject  BackgroundScroller                    │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Flutter["Flutter App (Dart)"]
+        direction TB
+        LS["InAppLocalhostServer :8080\nserves assets/unity/"]
+        WV["InAppWebView\ngame_page.dart"]
+        UI["Flutter HUD Overlay\nlives · score · game-over dialog"]
+        LS -->|HTTP| WV
+    end
+
+    subgraph WebGL["WebView — index.html"]
+        direction TB
+        JS["JavaScript Bridge\nwindow.unityInstance"]
+        UR["Unity Runtime (WASM ~29 MB)\nGameManager · ObjectSpawner\nPlayerController · FallingObject"]
+        BJ["bridge.jslib\n(C# DllImport)"]
+        JS --> UR
+        UR --> BJ
+    end
+
+    WV -->|load| WebGL
+    UI -->|"evaluateJavascript\nstartGame / restartGame\nsetCharacter / pause"| JS
+    BJ -->|"callHandler\nonUnityReady · onScoreUpdate\nonBurnout · onGameOver"| WV
+    WV -->|setState| UI
 ```
 
 ### Bridge message table
