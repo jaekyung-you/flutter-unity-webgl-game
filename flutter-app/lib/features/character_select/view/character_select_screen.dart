@@ -193,7 +193,7 @@ class _CharacterSelectView extends StatelessWidget {
           child: LinearProgressIndicator(
             value: ratio,
             backgroundColor: Colors.white12,
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF6B6B)),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.warning),
             minHeight: 6,
           ),
         ),

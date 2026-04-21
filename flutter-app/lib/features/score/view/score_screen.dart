@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../data/models/game_record.dart';
 import '../../../data/repositories/score_repository.dart';
 import '../bloc/score_bloc.dart';
@@ -166,18 +167,9 @@ class _ScoreView extends StatelessWidget {
   }
 
   Widget _bestCard(GameRecord best) {
-    return Container(
+    return AppCard(
+      highlighted: true,
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2A2A6E), Color(0xFF1A1A50)],
-        ),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: AppColors.amber.withOpacity(0.4)),
-        boxShadow: [
-          BoxShadow(color: AppColors.amber.withOpacity(0.1), blurRadius: 20),
-        ],
-      ),
       child: Row(
         children: [
           const Text('🏆', style: TextStyle(fontSize: 36)),
@@ -204,18 +196,12 @@ class _ScoreView extends StatelessWidget {
   }
 
   Widget _statCard(String label, String value) {
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.symmetric(
           vertical: AppSpacing.md, horizontal: AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.surface1,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: Colors.white10),
-      ),
       child: Column(
         children: [
-          Text(value,
-              style: AppTextStyles.title.copyWith(color: Colors.white)),
+          Text(value, style: AppTextStyles.title.copyWith(color: Colors.white)),
           const SizedBox(height: AppSpacing.xs),
           Text(label, style: AppTextStyles.micro),
         ],
@@ -224,15 +210,11 @@ class _ScoreView extends StatelessWidget {
   }
 
   Widget _recordRow(GameRecord r) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
       padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md, vertical: AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface1,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: Colors.white10),
-      ),
       child: Row(
         children: [
           Expanded(
@@ -251,6 +233,7 @@ class _ScoreView extends StatelessWidget {
           Text('${r.score}s',
               style: AppTextStyles.title.copyWith(color: AppColors.amber)),
         ],
+      ),
       ),
     );
   }

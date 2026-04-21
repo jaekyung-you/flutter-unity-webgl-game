@@ -177,7 +177,8 @@ class _GameViewState extends State<_GameView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,9 +224,11 @@ class _GameViewState extends State<_GameView> {
             ),
           ),
           _buildBurnoutGauge(state.burnoutCurrent, state.burnoutMax),
+          if (state.isPaused) _buildPauseOverlay(context),
           const Spacer(),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg, vertical: AppSpacing.md),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -235,6 +238,32 @@ class _GameViewState extends State<_GameView> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPauseOverlay(BuildContext context) {
+    return Expanded(
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: AppColors.surface0,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: AppColors.amber.withOpacity(0.3)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('⏸  일시정지',
+                  style: AppTextStyles.title.copyWith(color: AppColors.amber)),
+              const SizedBox(height: AppSpacing.sm),
+              Text('계속하려면 ▶ 를 누르세요',
+                  style: AppTextStyles.caption.copyWith(color: Colors.white54)),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -396,67 +425,58 @@ class _GameViewState extends State<_GameView> {
 
   Widget _buildBurnoutGauge(int current, int max) {
     final double percentage = max > 0 ? current / max : 0;
-    Color barColor;
-    if (percentage > 0.8) {
-      barColor = Colors.redAccent;
-    } else if (percentage > 0.5) {
-      barColor = Colors.orangeAccent;
-    } else {
-      barColor = Colors.lightGreenAccent;
-    }
+    final Color barColor = percentage > 0.8
+        ? AppColors.danger
+        : percentage > 0.5
+            ? AppColors.warning
+            : AppColors.success;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.local_fire_department, color: barColor, size: 20),
-              const SizedBox(width: 4),
-              const Text(
+              Icon(Icons.local_fire_department, color: barColor, size: 18),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
                 '스트레스',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
+                style: AppTextStyles.caption.copyWith(
                   fontWeight: FontWeight.w800,
-                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                  shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Container(
             width: 220,
-            height: 20,
+            height: 18,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white38, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              color: AppColors.surface2,
+              borderRadius: BorderRadius.circular(AppSpacing.sm),
+              border: Border.all(color: Colors.white24, width: 1.5),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppSpacing.sm - 1),
               child: Stack(
                 children: [
                   LinearProgressIndicator(
                     value: percentage,
                     backgroundColor: Colors.transparent,
                     valueColor: AlwaysStoppedAnimation<Color>(barColor),
-                    minHeight: 20,
+                    minHeight: 18,
                   ),
                   if (max > 1)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: List.generate(
                         max - 1,
-                        (index) => Container(width: 2, color: Colors.black.withOpacity(0.5)),
+                        (index) => Container(
+                            width: 1.5,
+                            color: Colors.black.withOpacity(0.4)),
                       ),
                     ),
                 ],
@@ -491,8 +511,8 @@ class _GameViewState extends State<_GameView> {
         ),
         child: Center(
             child: Text(label,
-                style: AppTextStyles.heading.copyWith(
-                    color: Colors.white, fontWeight: FontWeight.bold))),
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold))),
       ),
     );
   }
