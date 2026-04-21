@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_spacing.dart';
+import '../../../core/constants/app_text_styles.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../../data/repositories/score_repository.dart';
 import '../../character_select/view/character_select_screen.dart';
 import '../../score/view/score_screen.dart';
@@ -30,42 +33,25 @@ class _HomeView extends StatelessWidget {
       body: Stack(
         children: [
           _background(),
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 24,
-            right: 28,
-            child: _moon(110),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: _cityscape(context),
-          ),
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 24),
-                const Text(
+                const SizedBox(height: AppSpacing.lg),
+                Text(
                   '⚡ OVERWORK DODGE',
-                  style: TextStyle(
-                    color: AppColors.yellow,
-                    fontSize: 13,
+                  style: AppTextStyles.micro.copyWith(
+                    color: AppColors.amber,
                     letterSpacing: 3,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   '야근 피하기',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 34,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
+                  style: AppTextStyles.heading.copyWith(letterSpacing: 2),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.lg),
                 SizedBox(
                   height: 140,
                   child: Row(
@@ -76,7 +62,7 @@ class _HomeView extends StatelessWidget {
                           height: 120,
                           errorBuilder: (_, __, ___) =>
                               const Text('👨‍💼', style: TextStyle(fontSize: 60))),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: AppSpacing.md),
                       Image.asset('assets/images/char_female_normal.png',
                           height: 108,
                           errorBuilder: (_, __, ___) =>
@@ -84,33 +70,36 @@ class _HomeView extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.lg),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardDark,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: BlocBuilder<HomeBloc, HomeState>(
-                      builder: (context, state) => Row(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                  child: BlocBuilder<HomeBloc, HomeState>(
+                    builder: (context, state) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.md, horizontal: AppSpacing.lg),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface1,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        border: Border.all(
+                          color: state.bestScore > 0
+                              ? AppColors.amber.withOpacity(0.3)
+                              : Colors.white12,
+                        ),
+                      ),
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text('🏆', style: TextStyle(fontSize: 20)),
-                          const SizedBox(width: 8),
-                          const Text('최고 기록',
-                              style: TextStyle(color: Colors.white60, fontSize: 14)),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text('최고 기록',
+                              style: AppTextStyles.caption.copyWith(color: Colors.white60)),
+                          const SizedBox(width: AppSpacing.md),
                           Text(
                             state.bestScore > 0
                                 ? '${state.bestScore} s 생존'
                                 : '기록 없음',
                             style: TextStyle(
-                              color: state.bestScore > 0
-                                  ? AppColors.yellow
-                                  : Colors.white38,
+                              color: state.bestScore > 0 ? AppColors.amber : Colors.white38,
                               fontSize: state.bestScore > 0 ? 22 : 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -120,41 +109,24 @@ class _HomeView extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: AppSpacing.lg),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => _goCharacterSelect(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.yellow,
-                        foregroundColor: AppColors.background,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50)),
-                        elevation: 8,
-                        shadowColor: AppColors.yellow.withOpacity(0.5),
-                      ),
-                      child: const Text(
-                        '▶  게임 시작',
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2),
-                      ),
-                    ),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+                  child: AppButton.primary(
+                    label: '▶  게임 시작',
+                    onPressed: () => _goCharacterSelect(context),
+                    isFullWidth: true,
                   ),
                 ),
                 const Spacer(),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _iconBtn(context, '👤', '캐릭터',
                           () => _goCharacterSelect(context)),
-                      const SizedBox(width: 32),
+                      const SizedBox(width: AppSpacing.xl),
                       _iconBtn(context, '🏆', '점수', () => _goScore(context)),
                     ],
                   ),
@@ -190,7 +162,7 @@ class _HomeView extends StatelessWidget {
         width: 72,
         height: 72,
         decoration: BoxDecoration(
-          color: AppColors.cardDark,
+          color: AppColors.surface1,
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white12),
         ),
@@ -199,80 +171,18 @@ class _HomeView extends StatelessWidget {
           children: [
             Text(icon, style: const TextStyle(fontSize: 24)),
             const SizedBox(height: 2),
-            Text(label, style: const TextStyle(color: Colors.white60, fontSize: 10)),
+            Text(label, style: AppTextStyles.micro.copyWith(color: Colors.white60)),
           ],
         ),
       ),
     );
   }
 
-  Widget _background() => Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.background,
-              AppColors.backgroundMid,
-              AppColors.backgroundEnd,
-            ],
-          ),
-        ),
+  Widget _background() => Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset('assets/images/game_background.png', fit: BoxFit.cover),
+          Container(color: Colors.black.withOpacity(0.25)),
+        ],
       );
-
-  Widget _moon(double size) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: const Color(0xFFFFE566),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFFE566).withOpacity(0.4),
-              blurRadius: 48,
-              spreadRadius: 8,
-            ),
-          ],
-        ),
-      );
-
-  Widget _cityscape(BuildContext context) {
-    final w = MediaQuery.of(context).size.width;
-    return SizedBox(
-      height: 100,
-      child: CustomPaint(painter: _CityscapePainter(), size: Size(w, 100)),
-    );
-  }
-}
-
-class _CityscapePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = const Color(0xFF0A0A28);
-    final buildings = [
-      [0.0, 0.55, 0.12, 1.0],
-      [0.10, 0.3, 0.08, 1.0],
-      [0.16, 0.5, 0.10, 1.0],
-      [0.25, 0.2, 0.07, 1.0],
-      [0.30, 0.4, 0.09, 1.0],
-      [0.38, 0.25, 0.06, 1.0],
-      [0.43, 0.55, 0.11, 1.0],
-      [0.53, 0.35, 0.08, 1.0],
-      [0.60, 0.15, 0.07, 1.0],
-      [0.66, 0.45, 0.10, 1.0],
-      [0.75, 0.3, 0.08, 1.0],
-      [0.82, 0.5, 0.09, 1.0],
-      [0.90, 0.4, 0.10, 1.0],
-    ];
-    for (final b in buildings) {
-      canvas.drawRect(
-        Rect.fromLTRB(b[0] * size.width, b[1] * size.height,
-            (b[0] + b[2]) * size.width, b[3] * size.height),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
 }

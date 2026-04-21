@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
 import '../../home/view/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -42,15 +43,12 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.background, Color(0xFF12123A)],
-          ),
-        ),
-        child: SafeArea(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset('assets/images/game_background.png', fit: BoxFit.cover),
+          Container(color: Colors.black.withOpacity(0.35)),
+          SafeArea(
           child: Column(
             children: [
               const Spacer(flex: 2),
@@ -58,11 +56,11 @@ class _SplashScreenState extends State<SplashScreen>
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: AppColors.yellow,
+                  color: AppColors.amber,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.yellow.withOpacity(0.5),
+                      color: AppColors.amber.withOpacity(0.5),
                       blurRadius: 32,
                       spreadRadius: 4,
                     ),
@@ -72,22 +70,17 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Text('💼', style: TextStyle(fontSize: 48))),
               ),
               const SizedBox(height: 32),
-              const Text(
+              Text(
                 'OVERWORK DODGE',
-                style: TextStyle(
-                    color: AppColors.yellow,
-                    fontSize: 14,
+                style: AppTextStyles.micro.copyWith(
+                    color: AppColors.amber,
                     letterSpacing: 4,
-                    fontWeight: FontWeight.w600),
+                    fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 '야근 피하기',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2),
+                style: AppTextStyles.heading.copyWith(letterSpacing: 2),
               ),
               const Spacer(flex: 3),
               Padding(
@@ -101,7 +94,7 @@ class _SplashScreenState extends State<SplashScreen>
                         child: LinearProgressIndicator(
                           value: _progress.value,
                           backgroundColor: Colors.white12,
-                          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.yellow),
+                          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.amber),
                           minHeight: 4,
                         ),
                       ),
@@ -114,12 +107,10 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
               const SizedBox(height: 24),
-              const Text('ⓒ 2025 YAGUHN STUDIO',
-                  style: TextStyle(color: Colors.white24, fontSize: 11)),
-              const SizedBox(height: 16),
             ],
           ),
         ),
+        ],
       ),
     );
   }

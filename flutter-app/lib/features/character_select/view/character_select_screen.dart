@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_spacing.dart';
+import '../../../core/constants/app_text_styles.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../../data/repositories/score_repository.dart';
 import '../../game/view/game_page.dart';
 import '../bloc/character_select_bloc.dart';
@@ -29,49 +32,42 @@ class _CharacterSelectView extends StatelessWidget {
       body: Stack(
         children: [
           _background(),
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 20,
-            right: 24,
-            child: _moon(90),
-          ),
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                   child: Row(
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.arrow_back, color: Colors.white),
                       ),
-                      const SizedBox(width: 4),
-                      const Text('캐릭터 선택',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold)),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text('캐릭터 선택', style: AppTextStyles.title),
                     ],
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                   child: Text(
                     '함께 야근을 피할 동료를 골라요',
-                    style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14),
+                    style: AppTextStyles.caption.copyWith(
+                        color: Colors.white.withOpacity(0.6)),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: AppSpacing.lg),
                 BlocBuilder<CharacterSelectBloc, CharacterSelectState>(
                   builder: (context, state) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                     child: Row(
                       children: [
                         Expanded(
                             child: _characterCard(context, state, 'male',
                                 '신입사원 남자', '패기 넘치는 새내기', '체력이 좋음', 0.75, 0.40)),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: AppSpacing.sm),
                         Expanded(
                             child: _characterCard(context, state, 'female',
                                 '신입사원 여자', '눈치 빠른 멀티태스커', '회피력이 높음', 0.55, 0.80)),
@@ -83,33 +79,18 @@ class _CharacterSelectView extends StatelessWidget {
                 Center(
                   child: Text(
                     '카드를 탭해서 선택하세요',
-                    style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13),
+                    style: AppTextStyles.caption.copyWith(
+                        color: Colors.white.withOpacity(0.4)),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => _startGame(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.yellow,
-                        foregroundColor: AppColors.background,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50)),
-                        elevation: 8,
-                        shadowColor: AppColors.yellow.withOpacity(0.5),
-                      ),
-                      child: const Text(
-                        '▶  이 캐릭터로 시작',
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5),
-                      ),
-                    ),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                  child: AppButton.primary(
+                    label: '▶  이 캐릭터로 시작',
+                    onPressed: () => _startGame(context),
+                    isFullWidth: true,
                   ),
                 ),
               ],
@@ -138,17 +119,17 @@ class _CharacterSelectView extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           color: AppColors.cardDeep,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           border: Border.all(
-            color: isSelected ? AppColors.yellow : Colors.white12,
+            color: isSelected ? AppColors.amber : Colors.white12,
             width: isSelected ? 2.5 : 1,
           ),
           boxShadow: isSelected
               ? [BoxShadow(
-                  color: AppColors.yellow.withOpacity(0.25), blurRadius: 16)]
+                  color: AppColors.amber.withOpacity(0.25), blurRadius: 16)]
               : [],
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           children: [
             Align(
@@ -160,7 +141,7 @@ class _CharacterSelectView extends StatelessWidget {
                   width: 22,
                   height: 22,
                   decoration: const BoxDecoration(
-                      color: AppColors.yellow, shape: BoxShape.circle),
+                      color: AppColors.amber, shape: BoxShape.circle),
                   child: const Icon(Icons.check, color: Colors.black, size: 14),
                 ),
               ),
@@ -178,19 +159,20 @@ class _CharacterSelectView extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(name,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                style: AppTextStyles.caption.copyWith(
+                    color: Colors.white, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Text(desc,
-                style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 11),
+                style: AppTextStyles.micro.copyWith(
+                    color: Colors.white.withOpacity(0.5)),
                 textAlign: TextAlign.center),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Text(trait,
-                style: const TextStyle(
-                    color: AppColors.yellow, fontSize: 11, fontWeight: FontWeight.w600),
+                style: AppTextStyles.micro.copyWith(
+                    color: AppColors.amber, fontWeight: FontWeight.w600),
                 textAlign: TextAlign.center),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sm),
             _statBar('이동속도', speedRatio),
             const SizedBox(height: 6),
             _statBar('번아웃 저항', burnoutRatio),
@@ -204,7 +186,7 @@ class _CharacterSelectView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white54, fontSize: 10)),
+        Text(label, style: AppTextStyles.micro.copyWith(color: Colors.white54)),
         const SizedBox(height: 3),
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
@@ -219,33 +201,11 @@ class _CharacterSelectView extends StatelessWidget {
     );
   }
 
-  Widget _background() => Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.background,
-              AppColors.backgroundMid,
-              AppColors.backgroundEnd,
-            ],
-          ),
-        ),
-      );
-
-  Widget _moon(double size) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: const Color(0xFFFFE566),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFFE566).withOpacity(0.4),
-              blurRadius: 40,
-              spreadRadius: 6,
-            ),
-          ],
-        ),
+  Widget _background() => Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset('assets/images/game_background.png', fit: BoxFit.cover),
+          Container(color: Colors.black.withOpacity(0.3)),
+        ],
       );
 }

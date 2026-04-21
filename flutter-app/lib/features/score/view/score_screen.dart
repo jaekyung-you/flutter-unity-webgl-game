@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_spacing.dart';
+import '../../../core/constants/app_text_styles.dart';
 import '../../../data/models/game_record.dart';
 import '../../../data/repositories/score_repository.dart';
 import '../bloc/score_bloc.dart';
@@ -34,7 +36,7 @@ class _ScoreView extends StatelessWidget {
               builder: (context, state) {
                 if (state.status == ScoreStatus.loading) {
                   return const Center(
-                      child: CircularProgressIndicator(color: AppColors.yellow));
+                      child: CircularProgressIndicator(color: AppColors.amber));
                 }
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,22 +58,21 @@ class _ScoreView extends StatelessWidget {
 
   Widget _header(BuildContext context, ScoreState state) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back, color: Colors.white),
           ),
-          const Text('내 기록',
-              style: TextStyle(
-                  color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+          Text('내 기록', style: AppTextStyles.title),
           const Spacer(),
           if (state.records.isNotEmpty)
             TextButton(
               onPressed: () => _confirmClear(context),
-              child: const Text('전체 삭제',
-                  style: TextStyle(color: Colors.redAccent, fontSize: 13)),
+              child: Text('전체 삭제',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.danger)),
             ),
         ],
       ),
@@ -83,18 +84,29 @@ class _ScoreView extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.cardDark,
-        title: const Text('전체 삭제', style: TextStyle(color: Colors.white)),
-        content: const Text('모든 기록을 삭제할까요?',
-            style: TextStyle(color: Colors.white70)),
+        backgroundColor: AppColors.surface0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          side: const BorderSide(color: Colors.white24),
+        ),
+        title: Text('전체 삭제',
+            style: AppTextStyles.title.copyWith(color: Colors.white)),
+        content: Text('모든 기록을 삭제할까요?',
+            style: AppTextStyles.body.copyWith(color: Colors.white70)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소')),
-          TextButton(
+              child: Text('취소',
+                  style: AppTextStyles.caption.copyWith(color: Colors.white54))),
+          ElevatedButton(
               onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.danger,
+                  shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusSm))),
               child: const Text('삭제',
-                  style: TextStyle(color: Colors.redAccent))),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
         ],
       ),
     );
@@ -102,17 +114,17 @@ class _ScoreView extends StatelessWidget {
   }
 
   Widget _empty() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('📋', style: TextStyle(fontSize: 48)),
-          SizedBox(height: 12),
+          const Text('📋', style: TextStyle(fontSize: 48)),
+          const SizedBox(height: AppSpacing.sm),
           Text('아직 플레이 기록이 없어요',
-              style: TextStyle(color: Colors.white54, fontSize: 16)),
-          SizedBox(height: 4),
+              style: AppTextStyles.body.copyWith(color: Colors.white54)),
+          const SizedBox(height: AppSpacing.xs),
           Text('게임을 플레이하면 기록이 쌓입니다',
-              style: TextStyle(color: Colors.white30, fontSize: 13)),
+              style: AppTextStyles.caption.copyWith(color: Colors.white30)),
         ],
       ),
     );
@@ -126,28 +138,28 @@ class _ScoreView extends StatelessWidget {
     final totalDodge = records.map((r) => r.dodgeCount).reduce((a, b) => a + b);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _bestCard(best),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
           Row(
             children: [
               Expanded(child: _statCard('총 플레이', '$totalPlays회')),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(child: _statCard('평균 생존', '${avgScore}s')),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(child: _statCard('총 회피수', '$totalDodge')),
             ],
           ),
-          const SizedBox(height: 20),
-          const Text('최근 기록',
-              style: TextStyle(
-                  color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.lg),
+          Text('최근 기록',
+              style: AppTextStyles.caption.copyWith(
+                  color: Colors.white70, fontWeight: FontWeight.w600)),
+          const SizedBox(height: AppSpacing.sm),
           ...records.map(_recordRow),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.md),
         ],
       ),
     );
@@ -155,37 +167,34 @@ class _ScoreView extends StatelessWidget {
 
   Widget _bestCard(GameRecord best) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF2A2A6E), Color(0xFF1A1A50)],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.yellow.withOpacity(0.4)),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        border: Border.all(color: AppColors.amber.withOpacity(0.4)),
         boxShadow: [
-          BoxShadow(color: AppColors.yellow.withOpacity(0.1), blurRadius: 20),
+          BoxShadow(color: AppColors.amber.withOpacity(0.1), blurRadius: 20),
         ],
       ),
       child: Row(
         children: [
           const Text('🏆', style: TextStyle(fontSize: 36)),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('최고 기록',
-                    style: TextStyle(color: Colors.white54, fontSize: 12)),
-                const SizedBox(height: 4),
+                Text('최고 기록',
+                    style: AppTextStyles.micro.copyWith(color: Colors.white54)),
+                const SizedBox(height: AppSpacing.xs),
                 Text('${best.score}s 생존',
-                    style: const TextStyle(
-                        color: AppColors.yellow,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
+                    style: AppTextStyles.heading.copyWith(color: AppColors.amber)),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                     '${_formatDate(best.date)} · 회피 ${best.dodgeCount}회',
-                    style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                    style: AppTextStyles.micro.copyWith(color: Colors.white38)),
               ],
             ),
           ),
@@ -196,20 +205,19 @@ class _ScoreView extends StatelessWidget {
 
   Widget _statCard(String label, String value) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.md, horizontal: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.cardDark,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.surface1,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         border: Border.all(color: Colors.white10),
       ),
       child: Column(
         children: [
           Text(value,
-              style: const TextStyle(
-                  color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(label,
-              style: const TextStyle(color: Colors.white38, fontSize: 11)),
+              style: AppTextStyles.title.copyWith(color: Colors.white)),
+          const SizedBox(height: AppSpacing.xs),
+          Text(label, style: AppTextStyles.micro),
         ],
       ),
     );
@@ -217,11 +225,12 @@ class _ScoreView extends StatelessWidget {
 
   Widget _recordRow(GameRecord r) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.cardDarker,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.surface1,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         border: Border.all(color: Colors.white10),
       ),
       child: Row(
@@ -231,21 +240,16 @@ class _ScoreView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(_formatDate(r.date),
-                    style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600)),
+                    style: AppTextStyles.caption.copyWith(
+                        color: Colors.white70, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text('회피 ${r.dodgeCount}회 · 번아웃 ${r.burnoutCount}회',
-                    style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                    style: AppTextStyles.micro),
               ],
             ),
           ),
           Text('${r.score}s',
-              style: const TextStyle(
-                  color: AppColors.yellow,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold)),
+              style: AppTextStyles.title.copyWith(color: AppColors.amber)),
         ],
       ),
     );
@@ -261,13 +265,11 @@ class _ScoreView extends StatelessWidget {
 
   String _p(int n) => n.toString().padLeft(2, '0');
 
-  Widget _background() => Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.background, AppColors.backgroundEnd],
-          ),
-        ),
+  Widget _background() => Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset('assets/images/game_background.png', fit: BoxFit.cover),
+          Container(color: Colors.black.withOpacity(0.45)),
+        ],
       );
 }
