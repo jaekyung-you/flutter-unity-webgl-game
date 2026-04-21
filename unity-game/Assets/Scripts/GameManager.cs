@@ -121,6 +121,11 @@ public class GameManager : MonoBehaviour
         StartGame();
     }
 
+    public void OnFlutterSetCharacter(string charName)
+    {
+        player.SetCharacter(charName);
+    }
+
     public void OnFlutterPause(string _)
     {
         if (!isPlaying) return;

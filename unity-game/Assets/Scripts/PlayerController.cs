@@ -13,6 +13,17 @@ public class PlayerController : MonoBehaviour
     public Sprite burnoutSprite;
     public Sprite fallSprite;
 
+    [Header("Female Sprites")]
+    public Sprite femaleNormal;
+    public Sprite femaleHit;
+    public Sprite femaleBurnout;
+    public Sprite femaleFall;
+
+    private Sprite activeNormal;
+    private Sprite activeHit;
+    private Sprite activeBurnout;
+    private Sprite activeFall;
+
     private Rigidbody2D rb;
     private SpriteRenderer sr;
     private int moveDirection;
@@ -24,6 +35,11 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         rb.simulated = false;
+
+        activeNormal = normalSprite;
+        activeHit = hitSprite;
+        activeBurnout = burnoutSprite;
+        activeFall = fallSprite;
     }
 
     void Update()
@@ -51,7 +67,7 @@ public class PlayerController : MonoBehaviour
         isBurnout = false;
         rb.simulated = true;
         moveDirection = 0;
-        SetSprite(normalSprite);
+        SetSprite(activeNormal);
     }
 
     public void StopMoving()
@@ -67,20 +83,20 @@ public class PlayerController : MonoBehaviour
     public void SetBurnoutState()
     {
         isBurnout = true;
-        SetSprite(burnoutSprite);
+        SetSprite(activeBurnout);
     }
 
     public void SetFallState()
     {
         StopAllCoroutines();
-        SetSprite(fallSprite);
+        SetSprite(activeFall);
     }
 
     private IEnumerator HitFlashCoroutine()
     {
-        SetSprite(hitSprite);
+        SetSprite(activeHit);
         yield return new WaitForSecondsRealtime(0.4f);
-        SetSprite(isBurnout ? burnoutSprite : normalSprite);
+        SetSprite(isBurnout ? activeBurnout : activeNormal);
     }
 
     private void SetSprite(Sprite s)
@@ -96,5 +112,24 @@ public class PlayerController : MonoBehaviour
     {
         if (col.CompareTag("FallingObject"))
             GameManager.Instance.TriggerHit();
+    }
+
+    public void SetCharacter(string characterType)
+    {
+        if (characterType.ToLower() == "female" && femaleNormal != null)
+        {
+            activeNormal = femaleNormal;
+            activeHit = femaleHit;
+            activeBurnout = femaleBurnout;
+            activeFall = femaleFall;
+        }
+        else
+        {
+            activeNormal = normalSprite;
+            activeHit = hitSprite;
+            activeBurnout = burnoutSprite;
+            activeFall = fallSprite;
+        }
+        if (isAlive && !isBurnout) SetSprite(activeNormal);
     }
 }

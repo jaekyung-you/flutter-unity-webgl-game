@@ -6,12 +6,12 @@ using System.IO;
 
 public static class SceneSetup
 {
-    // All sprites are 512x512px at PPU=100 → world size 5.12 units at scale 1.0
+    // All sprites are 512x512px at PPU=512 → world size 1.0 unit at scale 1.0
     // Camera orthographicSize=5 → screen height=10 units, iPhone15 portrait width≈4.6 units
-    // Player  : target 1.1 units tall → 1.1/5.12 = 0.215f
-    // Falling : target 0.7 units tall → 0.7/5.12 = 0.137f
-    private const float PlayerScale  = 0.215f;
-    private const float FallingScale = 0.137f;
+    // Player  : target 1.3 units tall → scale 1.3
+    // Falling : target 0.7 units tall → scale 0.7 (smaller than player so it's dodgeable)
+    private const float PlayerScale  = 1.3f;
+    private const float FallingScale = 0.7f;
 
     [MenuItem("Build/Setup Game Scene")]
     public static void SetupScene()
@@ -31,9 +31,23 @@ public static class SceneSetup
         camera.orthographicSize = 5;
 
         // --- Background ---
-        var bg = CreateColorSprite("Background", new Color(0.1f, 0.1f, 0.15f));
+        // game_background.png is 610x1290 at PPU=100 → 6.1x12.9 units
+        // scale 0.78 fills camera height (12.9*0.78≈10 units) and width (6.1*0.78≈4.76 units)
+        var bgSprite = FindSprite("game_background");
+        GameObject bg;
+        if (bgSprite != null)
+        {
+            bg = new GameObject("Background");
+            var bgSr = bg.AddComponent<SpriteRenderer>();
+            bgSr.sprite = bgSprite;
+            bgSr.sortingOrder = -10;
+        }
+        else
+        {
+            bg = CreateColorSprite("Background", new Color(0.08f, 0.08f, 0.12f));
+        }
         bg.transform.position = new Vector3(0, 0, 1);
-        bg.transform.localScale = new Vector3(20, 12, 1);
+        bg.transform.localScale = bgSprite != null ? new Vector3(0.78f, 0.78f, 1f) : new Vector3(20, 12, 1);
 
         // --- Player ---
         var playerGo = new GameObject("Player");
@@ -52,17 +66,21 @@ public static class SceneSetup
         rb.simulated = false;
 
         var playerCol = playerGo.AddComponent<BoxCollider2D>();
-        playerCol.size = new Vector2(180f, 200f); // pixel-space collider (scaled down by PlayerScale)
+        playerCol.size = new Vector2(0.7f, 0.8f); // local-space collider (~0.91×1.04 world units at scale 1.3)
         playerCol.isTrigger = true;
 
         var pc = playerGo.AddComponent<PlayerController>();
         pc.moveSpeed = 5f;
 
-        // Assign all 4 character sprites
+        // Assign all character sprites (male default + female)
         pc.normalSprite  = normalSprite;
         pc.hitSprite     = FindSprite("char_male_hit");
         pc.burnoutSprite = FindSprite("char_male_burnout");
         pc.fallSprite    = FindSprite("char_male_fall");
+        pc.femaleNormal  = FindSprite("char_female_normal");
+        pc.femaleHit     = FindSprite("char_female_hit");
+        pc.femaleBurnout = FindSprite("char_female_burnout");
+        pc.femaleFall    = FindSprite("char_female_fall");
 
         // --- FallingObject prefabs ---
         Directory.CreateDirectory(Application.dataPath + "/Prefabs");
@@ -105,7 +123,7 @@ public static class SceneSetup
         foreach (var fullPath in Directory.GetFiles(spritesDir, "*.png"))
         {
             var fileName = Path.GetFileNameWithoutExtension(fullPath);
-            if (fileName.StartsWith("char_")) continue;
+            if (fileName.StartsWith("char_") || fileName == "game_background") continue;
 
             var assetPath = "Assets/Sprites/" + Path.GetFileName(fullPath);
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
@@ -158,7 +176,7 @@ public static class SceneSetup
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
             // Use same PPU for all; scale is controlled via transform
-            importer.spritePixelsPerUnit = 100f;
+            importer.spritePixelsPerUnit = fileName == "game_background" ? 100f : 512f;
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
         }
     }
