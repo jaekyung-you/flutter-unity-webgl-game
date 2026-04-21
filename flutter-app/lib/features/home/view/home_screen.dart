@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../data/repositories/score_repository.dart';
 import '../../character_select/view/character_select_screen.dart';
 import '../../score/view/score_screen.dart';
@@ -74,18 +75,10 @@ class _HomeView extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                   child: BlocBuilder<HomeBloc, HomeState>(
-                    builder: (context, state) => Container(
+                    builder: (context, state) => AppCard(
+                      highlighted: state.bestScore > 0,
                       padding: const EdgeInsets.symmetric(
                           vertical: AppSpacing.md, horizontal: AppSpacing.lg),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface1,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                        border: Border.all(
-                          color: state.bestScore > 0
-                              ? AppColors.amber.withOpacity(0.3)
-                              : Colors.white12,
-                        ),
-                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
