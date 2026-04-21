@@ -68,6 +68,10 @@
         if (window.unityInstance)
           window.unityInstance.SendMessage('GameManager', 'OnFlutterStartGame', '');
       };
+      window.flutterSetCharacter = function(charName) {
+        if (window.unityInstance)
+          window.unityInstance.SendMessage('GameManager', 'OnFlutterSetCharacter', charName);
+      };
       window.flutterRestartGame = function() {
         if (window.unityInstance)
           window.unityInstance.SendMessage('GameManager', 'OnFlutterRestartGame', '');

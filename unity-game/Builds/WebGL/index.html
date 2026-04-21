@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en-us">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>칼퇴왕</title>
+    <title>Unity Web Player | unity-game</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
@@ -20,12 +20,18 @@
       <div id="unity-footer">
         <div id="unity-logo-title-footer"></div>
         <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">칼퇴왕</div>
+        <div id="unity-build-title">unity-game</div>
       </div>
     </div>
     <script>
       var canvas = document.querySelector("#unity-canvas");
 
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
@@ -54,114 +60,52 @@
         codeUrl: buildUrl + "/WebGL.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
-        productName: "KalToeWang",
+        productName: "unity-game",
         productVersion: "1.0",
         showBanner: unityShowBanner,
+        // errorHandler: function(err, url, line) {
+        //    alert("error " + err + " occurred at line " + line);
+        //    // Return 'true' if you handled this error and don't want Unity
+        //    // to process it further, 'false' otherwise.
+        //    return true;
+        // },
       };
 
+      // By default, Unity keeps WebGL canvas render target size matched with
+      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+      // Set this to false if you want to decouple this synchronization from
+      // happening inside the engine, and you would instead like to size up
+      // the canvas DOM size and WebGL render target sizes yourself.
+      // config.matchWebGLToCanvasSize = false;
+
+      // If you would like all file writes inside Unity Application.persistentDataPath
+      // directory to automatically persist so that the contents are remembered when
+      // the user revisits the site the next time, uncomment the following line:
+      // config.autoSyncPersistentDataPath = true;
+      // This autosyncing is currently not the default behavior to avoid regressing
+      // existing user projects that might rely on the earlier manual
+      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
+      // expected to change.
+
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+
         var meta = document.createElement('meta');
         meta.name = 'viewport';
         meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
         document.getElementsByTagName('head')[0].appendChild(meta);
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
+
+        // To lower canvas resolution on mobile devices to gain some
+        // performance, uncomment the following line:
+        // config.devicePixelRatio = 1;
+
+
       } else {
+        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
         canvas.style.width = "960px";
         canvas.style.height = "600px";
-      }
-
-      // --- Browser-mode overlay UI ---
-      var overlay = document.createElement('div');
-      overlay.id = 'browser-overlay';
-      overlay.style.cssText = [
-        'display:none', 'position:fixed', 'inset:0',
-        'background:rgba(0,0,0,0.6)', 'color:#fff',
-        'font-family:sans-serif', 'flex-direction:column',
-        'align-items:center', 'justify-content:center', 'z-index:99'
-      ].join(';');
-      overlay.innerHTML =
-        '<h1 id="ov-title" style="font-size:2.5rem;letter-spacing:.2em;margin:0">칼퇴왕</h1>' +
-        '<p id="ov-sub" style="margin:.5rem 0 2rem;color:#ccc">← → 키 또는 A/D 로 피하세요</p>' +
-        '<div id="ov-scores" style="display:none;font-size:1.3rem;margin-bottom:1.5rem">' +
-          '<span id="ov-score"></span> &nbsp;|&nbsp; <span id="ov-best" style="color:#ffd54f"></span>' +
-        '</div>' +
-        '<button id="ov-btn" style="padding:.8rem 3rem;font-size:1.3rem;border:none;border-radius:8px;background:#2196f3;color:#fff;cursor:pointer">START</button>';
-      document.body.appendChild(overlay);
-
-      window.unityInstance = null;
-      var isBrowserMode = !window.flutter_inappwebview;
-
-      window.flutterStartGame = function() {
-        if (window.unityInstance)
-          window.unityInstance.SendMessage('GameManager', 'OnFlutterStartGame', '');
-      };
-      window.flutterRestartGame = function() {
-        if (window.unityInstance)
-          window.unityInstance.SendMessage('GameManager', 'OnFlutterRestartGame', '');
-      };
-      window.flutterMoveLeft = function() {
-        if (window.unityInstance)
-          window.unityInstance.SendMessage('Player', 'OnFlutterMoveLeft', '');
-      };
-      window.flutterMoveRight = function() {
-        if (window.unityInstance)
-          window.unityInstance.SendMessage('Player', 'OnFlutterMoveRight', '');
-      };
-      window.flutterStopMove = function() {
-        if (window.unityInstance)
-          window.unityInstance.SendMessage('Player', 'OnFlutterStopMove', '');
-      };
-      window.flutterPause = function() {
-        if (window.unityInstance)
-          window.unityInstance.SendMessage('GameManager', 'OnFlutterPause', '');
-      };
-
-      window.flutter_inappwebview = window.flutter_inappwebview || {
-        callHandler: function(name, a, b) {
-          if (name === 'onUnityReady') {
-            showOverlay('start');
-          } else if (name === 'onGameOver') {
-            showOverlay('gameover', a, b);
-          }
-        }
-      };
-
-      var bestScoreBrowser = 0;
-
-      function showOverlay(mode, score, best) {
-        var title = document.getElementById('ov-title');
-        var sub   = document.getElementById('ov-sub');
-        var scores= document.getElementById('ov-scores');
-        var btn   = document.getElementById('ov-btn');
-        overlay.style.display = 'flex';
-        if (mode === 'start') {
-          title.textContent = '칼퇴왕';
-          sub.textContent   = '← → 키 또는 A/D 로 피하세요';
-          sub.style.display = 'block';
-          scores.style.display = 'none';
-          btn.textContent   = 'START';
-          btn.style.background = '#2196f3';
-          btn.onclick = function() {
-            overlay.style.display = 'none';
-            window.flutterStartGame();
-            canvas.focus();
-          };
-        } else {
-          if (best > bestScoreBrowser) bestScoreBrowser = best;
-          title.textContent = 'GAME OVER';
-          sub.style.display = 'none';
-          scores.style.display = 'block';
-          document.getElementById('ov-score').textContent = 'Score: ' + (score || 0) + 's';
-          document.getElementById('ov-best').textContent  = 'Best: '  + bestScoreBrowser + 's';
-          btn.textContent   = 'RESTART';
-          btn.style.background = '#ff9800';
-          btn.onclick = function() {
-            overlay.style.display = 'none';
-            window.flutterRestartGame();
-            canvas.focus();
-          };
-        }
       }
 
       document.querySelector("#unity-loading-bar").style.display = "block";
@@ -171,23 +115,19 @@
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-        }).then((instance) => {
-          window.unityInstance = instance;
-          document.querySelector("#unity-loading-bar").style.display = "none";
-          document.querySelector("#unity-fullscreen-button").onclick = () => {
-            instance.SetFullscreen(1);
-          };
-          if (isBrowserMode) {
-            showOverlay('start');
-          } else {
-            window.flutter_inappwebview.callHandler('onUnityReady');
-          }
-        }).catch((message) => {
-          alert(message);
-        });
-      };
+              }).then((unityInstance) => {
+                document.querySelector("#unity-loading-bar").style.display = "none";
+                document.querySelector("#unity-fullscreen-button").onclick = () => {
+                  unityInstance.SetFullscreen(1);
+                };
+
+              }).catch((message) => {
+                alert(message);
+              });
+            };
 
       document.body.appendChild(script);
+
     </script>
   </body>
 </html>
