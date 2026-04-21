@@ -85,16 +85,17 @@ class _HomeView extends StatelessWidget {
                           const Text('🏆', style: TextStyle(fontSize: 20)),
                           const SizedBox(width: AppSpacing.sm),
                           Text('최고 기록',
-                              style: AppTextStyles.caption.copyWith(color: Colors.white60)),
+                              style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
                           const SizedBox(width: AppSpacing.md),
                           Text(
                             state.bestScore > 0
                                 ? '${state.bestScore} s 생존'
                                 : '기록 없음',
-                            style: TextStyle(
-                              color: state.bestScore > 0 ? AppColors.amber : Colors.white38,
+                            style: AppTextStyles.title.copyWith(
+                              color: state.bestScore > 0
+                                  ? AppColors.amber
+                                  : AppColors.textMuted,
                               fontSize: state.bestScore > 0 ? 22 : 16,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
@@ -157,14 +158,14 @@ class _HomeView extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surface1,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: AppColors.divider),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(icon, style: const TextStyle(fontSize: 24)),
             const SizedBox(height: 2),
-            Text(label, style: AppTextStyles.micro.copyWith(color: Colors.white60)),
+            Text(label, style: AppTextStyles.micro.copyWith(color: AppColors.textSecondary)),
           ],
         ),
       ),

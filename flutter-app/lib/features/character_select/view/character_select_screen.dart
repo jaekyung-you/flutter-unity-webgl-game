@@ -43,7 +43,9 @@ class _CharacterSelectView extends StatelessWidget {
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        icon: Text('←',
+                            style: AppTextStyles.title.copyWith(
+                                color: AppColors.textPrimary)),
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       Text('캐릭터 선택', style: AppTextStyles.title),
@@ -55,7 +57,7 @@ class _CharacterSelectView extends StatelessWidget {
                   child: Text(
                     '함께 야근을 피할 동료를 골라요',
                     style: AppTextStyles.caption.copyWith(
-                        color: Colors.white.withOpacity(0.6)),
+                        color: AppColors.textSecondary),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -80,7 +82,7 @@ class _CharacterSelectView extends StatelessWidget {
                   child: Text(
                     '카드를 탭해서 선택하세요',
                     style: AppTextStyles.caption.copyWith(
-                        color: Colors.white.withOpacity(0.4)),
+                        color: AppColors.textMuted),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -121,7 +123,7 @@ class _CharacterSelectView extends StatelessWidget {
           color: AppColors.cardDeep,
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           border: Border.all(
-            color: isSelected ? AppColors.amber : Colors.white12,
+            color: isSelected ? AppColors.amber : AppColors.divider,
             width: isSelected ? 2.5 : 1,
           ),
           boxShadow: isSelected
@@ -165,7 +167,7 @@ class _CharacterSelectView extends StatelessWidget {
             const SizedBox(height: AppSpacing.xs),
             Text(desc,
                 style: AppTextStyles.micro.copyWith(
-                    color: Colors.white.withOpacity(0.5)),
+                    color: AppColors.textMuted),
                 textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.xs),
             Text(trait,
@@ -186,13 +188,13 @@ class _CharacterSelectView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTextStyles.micro.copyWith(color: Colors.white54)),
+        Text(label, style: AppTextStyles.micro.copyWith(color: AppColors.textMuted)),
         const SizedBox(height: 3),
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: ratio,
-            backgroundColor: Colors.white12,
+            backgroundColor: AppColors.divider,
             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.warning),
             minHeight: 6,
           ),

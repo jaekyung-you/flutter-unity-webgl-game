@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_spacing.dart';
+import '../constants/app_text_styles.dart';
 
 class AppButton extends StatelessWidget {
   const AppButton._({
@@ -78,10 +79,7 @@ class AppButton extends StatelessWidget {
             ? Colors.transparent
             : backgroundColor.withOpacity(0.4),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, letterSpacing: 1),
-      ),
+      child: Text(label, style: AppTextStyles.button.copyWith(color: foregroundColor)),
     );
 
     if (isFullWidth) {

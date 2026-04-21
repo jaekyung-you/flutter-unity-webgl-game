@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../data/models/game_record.dart';
 import '../../../data/repositories/score_repository.dart';
@@ -65,7 +66,9 @@ class _ScoreView extends StatelessWidget {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Text('←',
+                style: AppTextStyles.title.copyWith(
+                    color: AppColors.textPrimary)),
           ),
           Text('내 기록', style: AppTextStyles.title),
           const Spacer(),
@@ -85,29 +88,20 @@ class _ScoreView extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface0,
+        backgroundColor: AppColors.dialogSurface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          side: const BorderSide(color: Colors.white24),
+          side: BorderSide(color: AppColors.danger.withOpacity(0.5), width: 1.5),
         ),
         title: Text('전체 삭제',
-            style: AppTextStyles.title.copyWith(color: Colors.white)),
+            style: AppTextStyles.title.copyWith(color: AppColors.amber)),
         content: Text('모든 기록을 삭제할까요?',
-            style: AppTextStyles.body.copyWith(color: Colors.white70)),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
+        actionsPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text('취소',
-                  style: AppTextStyles.caption.copyWith(color: Colors.white54))),
-          ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.danger,
-                  shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusSm))),
-              child: const Text('삭제',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+          AppButton.ghost(label: '취소', onPressed: () => Navigator.pop(context, false)),
+          AppButton.danger(label: '삭제', onPressed: () => Navigator.pop(context, true)),
         ],
       ),
     );
@@ -122,10 +116,10 @@ class _ScoreView extends StatelessWidget {
           const Text('📋', style: TextStyle(fontSize: 48)),
           const SizedBox(height: AppSpacing.sm),
           Text('아직 플레이 기록이 없어요',
-              style: AppTextStyles.body.copyWith(color: Colors.white54)),
+              style: AppTextStyles.body.copyWith(color: AppColors.textMuted)),
           const SizedBox(height: AppSpacing.xs),
           Text('게임을 플레이하면 기록이 쌓입니다',
-              style: AppTextStyles.caption.copyWith(color: Colors.white30)),
+              style: AppTextStyles.caption.copyWith(color: AppColors.textMuted)),
         ],
       ),
     );
@@ -157,7 +151,7 @@ class _ScoreView extends StatelessWidget {
           const SizedBox(height: AppSpacing.lg),
           Text('최근 기록',
               style: AppTextStyles.caption.copyWith(
-                  color: Colors.white70, fontWeight: FontWeight.w600)),
+                  color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
           const SizedBox(height: AppSpacing.sm),
           ...records.map(_recordRow),
           const SizedBox(height: AppSpacing.md),
@@ -179,14 +173,14 @@ class _ScoreView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('최고 기록',
-                    style: AppTextStyles.micro.copyWith(color: Colors.white54)),
+                    style: AppTextStyles.micro.copyWith(color: AppColors.textMuted)),
                 const SizedBox(height: AppSpacing.xs),
                 Text('${best.score}s 생존',
                     style: AppTextStyles.heading.copyWith(color: AppColors.amber)),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                     '${_formatDate(best.date)} · 회피 ${best.dodgeCount}회',
-                    style: AppTextStyles.micro.copyWith(color: Colors.white38)),
+                    style: AppTextStyles.micro.copyWith(color: AppColors.textMuted)),
               ],
             ),
           ),
@@ -223,7 +217,7 @@ class _ScoreView extends StatelessWidget {
               children: [
                 Text(_formatDate(r.date),
                     style: AppTextStyles.caption.copyWith(
-                        color: Colors.white70, fontWeight: FontWeight.w600)),
+                        color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text('회피 ${r.dodgeCount}회 · 번아웃 ${r.burnoutCount}회',
                     style: AppTextStyles.micro),

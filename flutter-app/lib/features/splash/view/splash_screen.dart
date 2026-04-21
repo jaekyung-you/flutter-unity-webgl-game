@@ -93,7 +93,7 @@ class _SplashScreenState extends State<SplashScreen>
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: _progress.value,
-                          backgroundColor: Colors.white12,
+                          backgroundColor: AppColors.divider,
                           valueColor: const AlwaysStoppedAnimation<Color>(AppColors.amber),
                           minHeight: 4,
                         ),
@@ -102,7 +102,7 @@ class _SplashScreenState extends State<SplashScreen>
                     const SizedBox(height: 12),
                     const Text('LOADING...',
                         style: TextStyle(
-                            color: Colors.white38, fontSize: 12, letterSpacing: 2)),
+                            color: AppColors.textMuted, fontSize: 12, letterSpacing: 2)),
                   ],
                 ),
               ),

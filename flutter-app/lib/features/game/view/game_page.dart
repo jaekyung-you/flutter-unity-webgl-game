@@ -186,38 +186,14 @@ class _GameViewState extends State<_GameView> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    GestureDetector(
-                      onTap: () => _showExitDialog(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.sm),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface2,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white38, width: 1.5),
-                        ),
-                        child: const Icon(Icons.arrow_back_rounded,
-                            color: Colors.white, size: 22),
-                      ),
-                    ),
+                    _hudCircleBtn('←', () => _showExitDialog(context)),
                     const SizedBox(width: AppSpacing.sm),
                     _buildTimerWidget(state.score),
                   ],
                 ),
-                GestureDetector(
-                  onTap: () => _togglePause(context),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface2,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white38, width: 1.5),
-                    ),
-                    child: Icon(
-                      state.isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                  ),
+                _hudCircleBtn(
+                  state.isPaused ? '▶' : '⏸',
+                  () => _togglePause(context),
                 ),
                 _buildDodgeBadge(state.dodgeCount),
               ],
@@ -260,7 +236,7 @@ class _GameViewState extends State<_GameView> {
                   style: AppTextStyles.title.copyWith(color: AppColors.amber)),
               const SizedBox(height: AppSpacing.sm),
               Text('계속하려면 ▶ 를 누르세요',
-                  style: AppTextStyles.caption.copyWith(color: Colors.white54)),
+                  style: AppTextStyles.caption.copyWith(color: AppColors.textMuted)),
             ],
           ),
         ),
@@ -276,7 +252,7 @@ class _GameViewState extends State<_GameView> {
             style: AppTextStyles.display.copyWith(letterSpacing: 4)),
         const SizedBox(height: AppSpacing.sm),
         Text('← → 로 피하세요!',
-            style: AppTextStyles.body.copyWith(color: Colors.white70)),
+            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
         const SizedBox(height: AppSpacing.xl),
         AppButton.primary(
           label: '▶  START',
@@ -346,7 +322,7 @@ class _GameViewState extends State<_GameView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: AppTextStyles.body.copyWith(color: Colors.white70)),
+        Text(label, style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
         Text(value,
             style: AppTextStyles.title.copyWith(color: valueColor)),
       ],
@@ -393,7 +369,7 @@ class _GameViewState extends State<_GameView> {
           Text('$seconds',
               style: AppTextStyles.title.copyWith(fontWeight: FontWeight.w900)),
           Text(' 초',
-              style: AppTextStyles.caption.copyWith(color: Colors.white70)),
+              style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary)),
         ],
       ),
     );
@@ -457,7 +433,7 @@ class _GameViewState extends State<_GameView> {
             decoration: BoxDecoration(
               color: AppColors.surface2,
               borderRadius: BorderRadius.circular(AppSpacing.sm),
-              border: Border.all(color: Colors.white24, width: 1.5),
+              border: Border.all(color: AppColors.divider, width: 1.5),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppSpacing.sm - 1),
@@ -489,34 +465,128 @@ class _GameViewState extends State<_GameView> {
   }
 
   Widget _moveButton(String label, String direction) {
-    return Listener(
-      onPointerDown: (_) {
+    return _PressableMoveButton(
+      label: label,
+      onDown: () {
         if (direction == 'left') {
           _webController?.evaluateJavascript(source: 'window.flutterMoveLeft();');
         } else {
           _webController?.evaluateJavascript(source: 'window.flutterMoveRight();');
         }
       },
-      onPointerUp: (_) =>
+      onUp: () =>
           _webController?.evaluateJavascript(source: 'window.flutterStopMove();'),
-      onPointerCancel: (_) =>
-          _webController?.evaluateJavascript(source: 'window.flutterStopMove();'),
-      child: Container(
-        width: 96,
-        height: 64,
-        decoration: BoxDecoration(
-          color: AppColors.surface1,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          border: Border.all(color: Colors.white24, width: 1.5),
-        ),
-        child: Center(
-            child: Text(label,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold))),
-      ),
     );
   }
 
   Widget _overlay(Widget child) =>
-      Container(color: Colors.black54, child: Center(child: child));
+      Container(color: AppColors.surface0, child: Center(child: child));
+
+  Widget _hudCircleBtn(String label, VoidCallback onTap) {
+    return _PressableCircle(label: label, onTap: onTap);
+  }
+}
+
+class _PressableCircle extends StatefulWidget {
+  const _PressableCircle({required this.label, required this.onTap});
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  State<_PressableCircle> createState() => _PressableCircleState();
+}
+
+class _PressableMoveButton extends StatefulWidget {
+  const _PressableMoveButton({
+    required this.label,
+    required this.onDown,
+    required this.onUp,
+  });
+  final String label;
+  final VoidCallback onDown;
+  final VoidCallback onUp;
+
+  @override
+  State<_PressableMoveButton> createState() => _PressableMoveButtonState();
+}
+
+class _PressableMoveButtonState extends State<_PressableMoveButton> {
+  bool _pressing = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) {
+        setState(() => _pressing = true);
+        widget.onDown();
+      },
+      onPointerUp: (_) {
+        setState(() => _pressing = false);
+        widget.onUp();
+      },
+      onPointerCancel: (_) {
+        setState(() => _pressing = false);
+        widget.onUp();
+      },
+      child: AnimatedScale(
+        scale: _pressing ? 0.92 : 1.0,
+        duration: const Duration(milliseconds: 60),
+        child: Container(
+          width: 96,
+          height: 64,
+          decoration: BoxDecoration(
+            color: _pressing
+                ? AppColors.amber.withOpacity(0.2)
+                : AppColors.surface1,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            border: Border.all(
+              color: _pressing ? AppColors.amber.withOpacity(0.6) : AppColors.divider,
+              width: 1.5,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              widget.label,
+              style: AppTextStyles.title.copyWith(
+                color: AppColors.textPrimary,
+                fontSize: 24,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PressableCircleState extends State<_PressableCircle> {
+  bool _pressing = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressing = true),
+      onTapUp: (_) {
+        setState(() => _pressing = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _pressing = false),
+      child: AnimatedScale(
+        scale: _pressing ? 0.88 : 1.0,
+        duration: const Duration(milliseconds: 80),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: AppColors.surface2,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.divider, width: 1.5),
+          ),
+          child: Text(
+            widget.label,
+            style: AppTextStyles.title.copyWith(color: AppColors.textPrimary),
+          ),
+        ),
+      ),
+    );
+  }
 }
