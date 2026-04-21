@@ -1,20 +1,13 @@
+<img width="590" src="https://github.com/user-attachments/assets/edd835c3-d473-433f-841e-3fb7f644998b" />
 # 칼퇴왕 — Avoid Overtime!
 
 > A Flutter × Unity WebGL mobile game where an office worker dodges falling workload objects to escape before overtime hits.
 
-<p align="center">
-  <img src="docs/screenshots/home.png" width="185" alt="Home screen" />
-  <img src="docs/screenshots/character_select.png" width="185" alt="Character select" />
-  <img src="docs/screenshots/gameplay.png" width="185" alt="Gameplay" />
-</p>
 
-> The screenshots above are rendered mockups using the actual game assets.
-> For real device screenshots, run the Flutter app on a physical iOS or Android device.
-
-[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white)](https://dart.dev)
-[![Unity](https://img.shields.io/badge/Unity-6000.4.3f1-000000?logo=unity&logoColor=white)](https://unity.com)
-[![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20Android-lightgrey)](https://flutter.dev/docs/deployment/ios)
+<img width="202" src="https://github.com/user-attachments/assets/d0d8c3db-5afd-4123-ab50-fd84c31a729f" />
+<img width="202" src="https://github.com/user-attachments/assets/836dc564-80c3-437a-a4d3-19d90ad1a32e" />
+<img width="202" src="https://github.com/user-attachments/assets/4d8fc95b-6b4a-4a67-aadb-17b936593c21" />
+<img width="202" src="https://github.com/user-attachments/assets/7ed0c831-d5ac-4d1b-bab6-9ee69d08bb0b" />
 
 ---
 
@@ -263,26 +256,6 @@ window.flutterStartGame = function() {
 | Initial load time | ~10–20 seconds on a physical device (WASM bundle is ~29 MB) |
 | No compression | WebGL compression is disabled; enabling it breaks the local server |
 | Landscape layout | App is locked to portrait; landscape is not currently supported |
-
----
-
-## Screenshots
-
-Three rendered mockups using the real game sprites are in `docs/screenshots/`:
-
-| Home | Character Select | Gameplay |
-|---|---|---|
-| ![Home](docs/screenshots/home.png) | ![Character Select](docs/screenshots/character_select.png) | ![Gameplay](docs/screenshots/gameplay.png) |
-
-To capture real device screenshots (showing the full Flutter HUD and smooth animations), run the app on a physical iOS or Android device and screenshot from the device.
-
-To preview the Unity game standalone in a browser (no Flutter HUD, shows HTML overlay buttons instead):
-
-```bash
-cd unity-game/Builds/WebGL
-python3 -m http.server 9090
-# Open http://localhost:9090
-```
 
 ---
 
