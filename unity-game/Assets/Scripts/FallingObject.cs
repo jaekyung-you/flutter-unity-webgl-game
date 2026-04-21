@@ -4,6 +4,7 @@ using UnityEngine;
 public class FallingObject : MonoBehaviour
 {
     [HideInInspector] public ObjectSpawner spawner;
+    [HideInInspector] public float speedMultiplier = 1.0f;
 
     private Rigidbody2D rb;
 
@@ -20,7 +21,7 @@ public class FallingObject : MonoBehaviour
     void Update()
     {
         if (spawner != null)
-            rb.linearVelocity = Vector2.down * spawner.CurrentSpeed;
+            rb.linearVelocity = Vector2.down * spawner.CurrentSpeed * speedMultiplier;
 
         float despawnY = Camera.main.transform.position.y - Camera.main.orthographicSize - 1f;
         if (transform.position.y < despawnY)

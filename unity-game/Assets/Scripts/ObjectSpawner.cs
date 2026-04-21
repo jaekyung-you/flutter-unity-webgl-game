@@ -91,7 +91,26 @@ public class ObjectSpawner : MonoBehaviour
 
         obj.transform.position = new Vector3(spawnX, spawnY, 0f);
         var fo = obj.GetComponent<FallingObject>();
-        if (fo != null) fo.spawner = this;
+        if (fo != null)
+        {
+            fo.spawner = this;
+            fo.speedMultiplier = GetSpeedMultiplier(prefab.name);
+        }
         obj.SetActive(true);
+    }
+
+    private static float GetSpeedMultiplier(string prefabName)
+    {
+        switch (prefabName.ToLower())
+        {
+            case "document_pile":    return 0.8f;  // 서류더미 — 묵직하게 느리게
+            case "kpi_bomb":         return 1.5f;  // KPI 폭탄 — 가장 빠름
+            case "meeting_mail":     return 0.9f;  // 회의 메일 — 보통
+            case "overtime_notice":  return 1.1f;  // 야근 통보 — 약간 빠름
+            case "overwork_coffee":  return 1.0f;  // 야근 커피 — 기준 속도
+            case "revision_laptop":  return 1.2f;  // 수정 요청 — 조급하게
+            case "urgent_phone":     return 1.4f;  // 긴급 전화 — 빠름
+            default:                 return 1.0f;
+        }
     }
 }
