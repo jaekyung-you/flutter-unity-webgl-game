@@ -181,7 +181,7 @@ class _GameViewState extends State<_GameView> {
                 horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -191,15 +191,14 @@ class _GameViewState extends State<_GameView> {
                     _buildTimerWidget(state.score),
                   ],
                 ),
+                _buildLivesDisplay(state.burnoutCurrent, state.burnoutMax),
                 _hudCircleBtn(
                   state.isPaused ? '▶' : '⏸',
                   () => _togglePause(context),
                 ),
-                _buildDodgeBadge(state.dodgeCount),
               ],
             ),
           ),
-          _buildBurnoutGauge(state.burnoutCurrent, state.burnoutMax),
           if (state.isPaused) _buildPauseOverlay(context),
           const Spacer(),
           Padding(
@@ -364,8 +363,6 @@ class _GameViewState extends State<_GameView> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.timer_outlined, color: AppColors.amber, size: 20),
-          const SizedBox(width: 6),
           Text('$seconds',
               style: AppTextStyles.title.copyWith(fontWeight: FontWeight.w900)),
           Text(' 초',
@@ -375,92 +372,21 @@ class _GameViewState extends State<_GameView> {
     );
   }
 
-  Widget _buildDodgeBadge(int count) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.surface2,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusPill),
-        border: Border.all(color: AppColors.success.withOpacity(0.7), width: 1.5),
-        boxShadow: [
-          BoxShadow(color: AppColors.success.withOpacity(0.2), blurRadius: 8),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.shield_outlined, color: AppColors.success, size: 20),
-          const SizedBox(width: 6),
-          Text('$count',
-              style: AppTextStyles.title.copyWith(fontWeight: FontWeight.w900)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBurnoutGauge(int current, int max) {
-    final double percentage = max > 0 ? current / max : 0;
-    final Color barColor = percentage > 0.8
-        ? AppColors.danger
-        : percentage > 0.5
-            ? AppColors.warning
-            : AppColors.success;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.local_fire_department, color: barColor, size: 18),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                '스트레스',
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w800,
-                  shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
-                ),
-              ),
-            ],
+  Widget _buildLivesDisplay(int current, int max) {
+    final livesLeft = max - current;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(max, (index) {
+        final isAlive = index < livesLeft;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Icon(
+            isAlive ? Icons.favorite : Icons.favorite_border,
+            color: isAlive ? AppColors.danger : AppColors.textMuted,
+            size: 22,
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Container(
-            width: 220,
-            height: 18,
-            decoration: BoxDecoration(
-              color: AppColors.surface2,
-              borderRadius: BorderRadius.circular(AppSpacing.sm),
-              border: Border.all(color: AppColors.divider, width: 1.5),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppSpacing.sm - 1),
-              child: Stack(
-                children: [
-                  LinearProgressIndicator(
-                    value: percentage,
-                    backgroundColor: Colors.transparent,
-                    valueColor: AlwaysStoppedAnimation<Color>(barColor),
-                    minHeight: 18,
-                  ),
-                  if (max > 1)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(
-                        max - 1,
-                        (index) => Container(
-                            width: 1.5,
-                            color: Colors.black.withOpacity(0.4)),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      }),
     );
   }
 

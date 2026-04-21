@@ -38,15 +38,6 @@ class _HomeView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: AppSpacing.lg),
-                Text(
-                  '⚡ OVERWORK DODGE',
-                  style: AppTextStyles.micro.copyWith(
-                    color: AppColors.amber,
-                    letterSpacing: 3,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
                 const SizedBox(height: 6),
                 Text(
                   '야근 피하기',

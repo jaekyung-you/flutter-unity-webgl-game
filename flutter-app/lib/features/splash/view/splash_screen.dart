@@ -69,14 +69,6 @@ class _SplashScreenState extends State<SplashScreen>
                 child: const Center(
                     child: Text('💼', style: TextStyle(fontSize: 48))),
               ),
-              const SizedBox(height: 32),
-              Text(
-                'OVERWORK DODGE',
-                style: AppTextStyles.micro.copyWith(
-                    color: AppColors.amber,
-                    letterSpacing: 4,
-                    fontWeight: FontWeight.w700),
-              ),
               const SizedBox(height: 8),
               Text(
                 '야근 피하기',
