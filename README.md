@@ -1,9 +1,9 @@
-<img width="590" src="https://github.com/user-attachments/assets/edd835c3-d473-433f-841e-3fb7f644998b" />
 # 칼퇴왕 — Avoid Overtime!
 
 > A Flutter × Unity WebGL mobile game where an office worker dodges falling workload objects to escape before overtime hits.
 
 
+<img width="202" src="https://github.com/user-attachments/assets/edd835c3-d473-433f-841e-3fb7f644998b" />
 <img width="202" src="https://github.com/user-attachments/assets/d0d8c3db-5afd-4123-ab50-fd84c31a729f" />
 <img width="202" src="https://github.com/user-attachments/assets/836dc564-80c3-437a-a4d3-19d90ad1a32e" />
 <img width="202" src="https://github.com/user-attachments/assets/4d8fc95b-6b4a-4a67-aadb-17b936593c21" />
