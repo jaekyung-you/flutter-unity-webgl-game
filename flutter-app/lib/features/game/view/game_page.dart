@@ -48,9 +48,17 @@ class _GameViewState extends State<_GameView> {
   }
 
   Future<void> _startServer() async {
-    _localServer = InAppLocalhostServer(port: _port, documentRoot: 'assets/unity/');
-    await _localServer!.start();
-    if (mounted) setState(() => _serverReady = true);
+    try {
+      _localServer = InAppLocalhostServer(port: _port, documentRoot: 'assets/unity/');
+      await _localServer!.start();
+      if (mounted) setState(() => _serverReady = true);
+    } catch (_) {
+      // 이전 실행에서 포트가 남아 있으면 기존 서버를 닫고 재시도
+      await _localServer?.close();
+      _localServer = InAppLocalhostServer(port: _port, documentRoot: 'assets/unity/');
+      await _localServer!.start();
+      if (mounted) setState(() => _serverReady = true);
+    }
   }
 
   @override
@@ -127,8 +135,7 @@ class _GameViewState extends State<_GameView> {
       handlerName: 'onGameOver',
       callback: (args) {
         final finalScore = args.isNotEmpty ? (args[0] as num).toInt() : 0;
-        final best = args.length > 1 ? (args[1] as num).toInt() : 0;
-        bloc.add(GameOver(finalScore, best));
+        bloc.add(GameOver(finalScore));
       },
     );
   }

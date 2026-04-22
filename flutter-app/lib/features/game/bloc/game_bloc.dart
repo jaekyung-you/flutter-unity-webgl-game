@@ -51,10 +51,11 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       dodgeCount: state.dodgeCount,
       burnoutCount: state.burnoutCurrent,
     ));
+    final bestScore = await _repo.getBestScore();
     emit(state.copyWith(
       status: GameStatus.gameOver,
       score: event.finalScore,
-      bestScore: event.bestScore,
+      bestScore: bestScore,
     ));
   }
 

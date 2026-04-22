@@ -42,10 +42,9 @@ class GameDodgeUpdated extends GameEvent {
 
 class GameOver extends GameEvent {
   final int finalScore;
-  final int bestScore;
-  const GameOver(this.finalScore, this.bestScore);
+  const GameOver(this.finalScore);
   @override
-  List<Object?> get props => [finalScore, bestScore];
+  List<Object?> get props => [finalScore];
 }
 
 class GamePauseToggled extends GameEvent {
