@@ -88,7 +88,7 @@ flowchart TB
 | Unity → Flutter | Unity ready | `bridge.jslib` → `callHandler('onUnityReady')` |
 | Unity → Flutter | Score tick | `SendScoreToFlutter(int)` → `callHandler('onScoreUpdate', score)` |
 | Unity → Flutter | Lives update | `SendBurnoutToFlutter(current, max)` → `callHandler('onBurnout', ...)` |
-| Unity → Flutter | Game over | `SendGameOverToFlutter(score, best)` → `callHandler('onGameOver', ...)` |
+| Unity → Flutter | Game over | `SendGameOverToFlutter(score)` → `callHandler('onGameOver', score)` — best score derived from local repo |
 
 ---
 
@@ -207,9 +207,17 @@ For iOS, make sure your device is trusted and you have a valid signing certifica
 
 ### Race condition: wait for the local server before mounting the WebView
 
+Port 8080 can remain occupied when a previous run crashes on iOS. The server start is wrapped in a try/catch that closes the stale socket and retries before setting `_serverReady`.
+
 ```dart
 // game_page.dart
-await _localServer!.start();
+try {
+  await _localServer!.start();
+} catch (_) {
+  await _localServer?.close();
+  _localServer = InAppLocalhostServer(port: _port, documentRoot: 'assets/unity/');
+  await _localServer!.start();
+}
 setState(() => _serverReady = true);  // WebView only renders after this
 ```
 
