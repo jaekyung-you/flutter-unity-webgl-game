@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_dialog.dart';
 import '../../../data/models/game_record.dart';
 import '../../../data/repositories/score_repository.dart';
 import '../bloc/score_bloc.dart';
@@ -85,25 +85,12 @@ class _ScoreView extends StatelessWidget {
 
   Future<void> _confirmClear(BuildContext context) async {
     final bloc = context.read<ScoreBloc>();
-    final confirm = await showDialog<bool>(
+    final confirm = await AppDialog.show(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.dialogSurface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          side: BorderSide(color: AppColors.danger.withOpacity(0.5), width: 1.5),
-        ),
-        title: Text('전체 삭제',
-            style: AppTextStyles.title.copyWith(color: AppColors.amber)),
-        content: Text('모든 기록을 삭제할까요?',
-            style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
-        actionsPadding: const EdgeInsets.fromLTRB(
-            AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
-        actions: [
-          AppButton.ghost(label: '취소', onPressed: () => Navigator.pop(context, false)),
-          AppButton.danger(label: '삭제', onPressed: () => Navigator.pop(context, true)),
-        ],
-      ),
+      title: '전체 삭제',
+      message: '모든 기록을 삭제할까요?',
+      confirmLabel: '삭제',
+      isDangerous: true,
     );
     if (confirm == true) bloc.add(const ScoreClearRequested());
   }
